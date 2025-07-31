@@ -1,0 +1,241 @@
+* {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body,
+        html {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            font-family: sans-serif;
+            padding: 0;
+            overflow-y: hidden;
+            overflow-x: hidden;
+            top: 1px;
+        }
+
+        video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            z-index: -1;
+        }
+
+        .logo-wrapper img {
+            height: 30px;
+            width: 150px;
+            object-fit: contain;
+            display: block;
+        }
+
+        .top-bar {
+            height: 60px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 12px;
+            margin: 20px 40px;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+            position: relative;
+        }
+
+        .left-side {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+        }
+
+        #menuToggle {
+            position: relative;
+        }
+
+        .menu-icon {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-gap: 3px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            z-index: 100;
+            position: relative;
+            pointer-events: auto;
+        }
+
+        .menu-icon div {
+            width: 5px;
+            height: 5px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .horizontal-menu {
+            display: none;
+            gap: 10px;
+            position: absolute;
+            top: -7px;
+            left: 110%;
+            padding: 5px 10px;
+            border-radius: 5px;
+            z-index: 999;
+            white-space: nowrap;
+        }
+
+        .horizontal-menu.active {
+            display: flex;
+        }
+
+        .horizontal-menu button {
+            background: transparent;
+            border: 1px solid white;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .horizontal-menu button:hover {
+            background: linear-gradient(to right, rgba(255, 255, 255, 0.43), rgba(255, 255, 255, 0.43));
+            color: white;
+        }
+
+        .menu-item.active {
+            background: linear-gradient(to right, rgba(0, 0, 0, 0.54), rgba(0, 0, 0, 0.54));
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        }
+
+        .center-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .center-content .line {
+            height: 3px;
+            background: white;
+            transition: width 0.3s ease;
+        }
+
+        #leftLine {
+            width: 250px;
+        }
+
+        #rightLine {
+            width: 250px;
+        }
+
+        .play-pause {
+            width: 30px;
+            height: 30px;
+            border: 2px solid white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: white;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .left-hover-area {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 60px;
+            height: 100%;
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        .arrow-button {
+            position: absolute;
+            top: 55%;
+            left: 0;
+            transform: translateY(-50%);
+            width: 30px;
+            height: 70%;
+            background: rgba(255, 255, 255, 0);
+            color: white;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-top-right-radius: 10px;
+            border-bottom-right-radius: 10px;
+            transition: background 0.3s ease;
+            cursor: default;
+            pointer-events: auto;
+        }
+
+        .left-hover-area:hover .arrow-button {
+            background: rgba(255, 255, 255, 0.1);
+            pointer-events: auto;
+            cursor: pointer;
+        }
+
+        .right-hover-area {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 60px;
+            height: 100%;
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        .arrow-button-right {
+            position: absolute;
+            top: 55%;
+            right: 0;
+            transform: translateY(-50%);
+            width: 30px;
+            height: 70%;
+            background: rgba(255, 255, 255, 0);
+            color: white;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-top-left-radius: 10px;
+            border-bottom-left-radius: 10px;
+            transition: background 0.3s ease;
+            cursor: default;
+            pointer-events: auto;
+        }
+
+        .right-hover-area:hover .arrow-button-right {
+            background: rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+        }
+
+        .content-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            width: 100%;
+            padding-top: 45px;
+            padding-left: 17px;
+            padding-bottom: 100px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .card-pages {
+            display: flex;
+            transition: transform 0.5s ease;
+            width: 100%;
+            height: 500px;
+        }

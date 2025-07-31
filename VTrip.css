@@ -1,0 +1,133 @@
+/* ====== RESET & BASE ====== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body, html {
+    height: 100%;
+    width: 100%;
+    font-family: sans-serif;
+    overflow-x: hidden;
+}
+video {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -1;
+}
+
+/* ====== TOP BAR ====== */
+.top-bar {
+    height: 60px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(15px);
+    margin: 20px 40px;
+    padding: 0 20px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.logo-wrapper img {
+    height: 30px;
+    width: 150px;
+    object-fit: contain;
+}
+
+/* ====== CARD WRAPPER ====== */
+.card-pages {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 20px;
+}
+.vtrip-card {
+    display: flex;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.85), rgba(34, 34, 34, 0.9));
+    border-radius: 10px;
+    overflow: hidden;
+    flex: 1 1 calc(50% - 10px);
+    min-height: 100px;
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* Bagian kiri: plat nomor & kendaraan */
+.vtrip-card .card-left {
+    background: #e63946; /* warna merah sporty */
+    padding: 10px 15px;
+    min-width: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.vehicle-plate {
+    background: white;
+    color: black;
+    font-weight: bold;
+    font-size: 16px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 5px;
+}
+.vehicle-name {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* Bagian tengah: institusi & used by */
+.vtrip-card .card-center {
+    flex: 1;
+    padding: 10px 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.institution {
+    font-size: 15px;
+    font-weight: bold;
+}
+.used-by-label {
+    font-size: 11px;
+    color: #FFD166;
+}
+.used-by-name {
+    background: #FFD166;
+    color: black;
+    padding: 2px 6px;
+    font-size: 11px;
+    border-radius: 8px;
+    display: inline-block;
+    margin-top: 2px;
+}
+
+/* Bagian kanan: tanggal from & return */
+.vtrip-card .card-right {
+    padding: 10px 15px;
+    min-width: 180px;
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.from-label, .return-label {
+    font-size: 10px;
+    color: #ccc;
+}
+.from-date {
+    background: #06d6a0;
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-size: 11px;
+    margin-bottom: 5px;
+}
+.return-date {
+    background: #118ab2;
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-size: 11px;
+}
