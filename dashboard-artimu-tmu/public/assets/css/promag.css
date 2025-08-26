@@ -1,0 +1,106 @@
+/* ===== Reset & Base ===== */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  height: 100%; width: 100%;
+  margin: 0; font-family: sans-serif; padding: 0;
+  overflow: hidden; top: 1px;
+}
+
+/* ==== Kontainer: jangan dibatasi max-width layout global ==== */
+.content-wrapper-promag {
+  display: flex; justify-content: center; align-items: flex-start; width: 100%;
+  padding: 5px 20px 0 20px; margin-top: 5px; margin-left: 5px; overflow: hidden;
+}
+
+.card-pages-promag {
+  display: flex; transition: transform 0.5s ease;
+  width: 100%;
+  /* biar bisa melebar di monitor besar tapi tetap ada margin */
+  max-width: min(2000px, 98vw);
+  margin-inline: auto;
+  height: 500px;
+}
+
+/* ===== Page (grid 2 baris × kolom responsif) ===== */
+.page-promag {
+  /* kolom ditulis oleh JS ke --promag-cols (root), lalu dipropagasi ke --cols */
+  --cols: var(--promag-cols, 4);
+
+  min-width: 100%;
+  display: grid;
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  grid-template-rows: repeat(2, auto);
+  gap: 12px;
+  padding: 8px 12px 0 0;
+  box-sizing: border-box;
+  grid-auto-rows: auto;
+  justify-content: center;
+  justify-items: center;
+}
+
+/* ===== Page indicators ===== */
+.page-indicators-promag {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 12px; z-index: 30;
+}
+.indicator-dot-promag {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: rgba(255,255,255,0.4); cursor: pointer; transition: all .3s ease; border: 2px solid transparent;
+}
+.indicator-dot-promag.active { background: rgba(255,255,255,.9); box-shadow: 0 0 10px rgba(255,255,255,.5); transform: scale(1.2); }
+.indicator-dot-promag:hover { background: rgba(255,255,255,.7); transform: scale(1.1); }
+
+/* ===== Card ===== */
+.card-promag {
+  height: 235px;
+  width: 300px; /* ukuran acuan perhitungan kolom */
+  backdrop-filter: blur(20px);
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 10px;
+  padding: 14px;
+  box-shadow: 0 4px 12px rgba(0,0,0,.4);
+  font-size: 15px;
+  display: flex; flex-direction: column;
+}
+.card-content-promag { display: block; }
+
+.tag-date-wrapper-promag { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.status-promag { color: #fff; display: inline-block; border-radius: 10px; font-size: 12px; font-weight: bold; }
+
+.status-promag .ON-PROGRESS { background: orange; color: #fff; padding: 2px 6px; border-radius: 10px; font-weight: bold; }
+.status-promag .COMPLETED   { background: green;  color: #fff; padding: 2px 6px; border-radius: 10px; font-weight: bold; }
+.status-promag .PENDING     { background: #2a0658; color:#fff; padding: 2px 6px; border-radius: 10px; font-weight: bold; }
+
+.title-promag { font-weight: bold; font-size: 15px; margin-top: 16px; padding-bottom: 8px; color: #fff; }
+.subtitle-promag { margin: 3px 0; font-size: 13px; color: #fff; }
+.subtitle-pj-promag { margin: 3px 0; font-size: 13px; color: #fff; font-weight: bold; }
+.subtitle-tanggal-promag { text-align: right; font-size: 13px; line-height: 1; color: #fff; }
+
+.lokasi-progress-wrapper-promag {
+  background: #079FA4; border-radius: 10px; overflow: hidden; height: 22px; margin-bottom: 5px; display: inline-block;
+}
+.lokasi-progress-promag { height: 100%; display: flex; align-items: center; padding-left: 3px; margin: 0 3px; font-size: 12px; font-weight: bold; color: #fff; white-space: nowrap; }
+
+/* Perusahaan badge */
+.perusahaan-promag span { color: #fff; padding: 2px 8px; border-radius: 10px; font-size: 12px; font-weight: bold; display: inline-block; }
+.perusahaan-promag .TMU { background: #00CED1; }
+.perusahaan-promag .OTI { background: #FF6347; }
+.perusahaan-promag .ARI { background: #32CD32; }
+
+/* ===== Progress ===== */
+.progress-wrapper-promag { color: #fff; margin-top: 20px; margin-bottom: 6px; }
+.progress-title-promag { margin-bottom: 5px; font-size: 13px; font-weight: bold; }
+.progress-container-promag {
+  background: #fff; height: 18px; border-radius: 10px; overflow: hidden;
+  position: relative; display: flex; align-items: center; justify-content: center;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.08);
+}
+.progress-bar-promag {
+  --mix: 0%;
+  height: 100%; width: 0%;
+  position: absolute; left: 0; top: 0; border-radius: 10px; transition: width .35s ease;
+  background-color: color-mix(in oklab, #00fd3b var(--mix), #ff0019 calc(100% - var(--mix)));
+}
+.progress-text-promag { position: relative; z-index: 1; font-size: 11px; font-weight: bold; color: #333; }
