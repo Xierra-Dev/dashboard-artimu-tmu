@@ -13,7 +13,6 @@ body {
   font-family: sans-serif;
   padding: 0;
   overflow: hidden; /* Desktop: tidak ada scroll */
-  top: 1px;
 }
 
 /* Background video */
@@ -45,21 +44,20 @@ video {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  width: 100%;
-  max-width: 1500px;
+  width: calc(100% - 90px);
   max-height: auto;
   margin: 0 auto;
-  padding-bottom: 120px;
-  margin-top: 15px;
   overflow: hidden; /* Desktop: sembunyikan overflow */
   position: relative;
+  z-index: 1;
+  border: 1px solid #8bb929; /* debug border, opsional */
 }
 
 .card-pages {
   display: flex;
   transition: transform 0.5s ease;
   width: 100%;
-  height: 750px;
+  height: 750px;            /* DEFAULT/FALLBACK untuk non-desktop */
   position: relative;
 }
 
@@ -78,6 +76,7 @@ video {
   align-items: start;
   overflow: hidden;
   align-content: start;
+  grid-auto-rows: 110px;
 }
 
 /* ===== Card Container untuk kontrol ukuran ===== */
@@ -92,7 +91,7 @@ video {
 /* ===== Card dengan ukuran responsif ===== */
 .card {
   width: 100%;
-  height: 105px;
+  height: 110px;
   backdrop-filter: blur(20px);
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -105,6 +104,7 @@ video {
   align-items: center;
   position: relative;
   overflow: hidden;
+  border: 1px solid rgb(211, 138, 1);
 }
 
 .card:nth-child(4n + 1),
@@ -266,124 +266,143 @@ video {
   transform: scale(1.1);
 }
 
-/* ===== Responsive Design ===== */
+/* ===== Desktop (≥1400px): ikut tinggi wrapper ===== */
 @media (min-width: 1400px) {
-  /* atau biarkan default */
   .content-wrapper {
-    width: calc(100% - 90px); /* 45px kiri + 45px kanan */ /* top | left/right | bottom */
+    max-width: calc(100% - 90px);
+    max-height: calc(100vh - 52px);
   }
 
-  .card-left {
-    flex: 0 0 180px;
-    max-width: 180px;
+  .page {
+    display: flex;
+    justify-content: flex-start; /* mulai dari kiri */
+    align-items: flex-start;     /* mulai dari atas */
+    padding: 15px 0;
+    height: 100%;
+    flex-shrink: 0;
+    overflow: hidden;
   }
 
-  .card-right {
-    flex: 0 0 120px;
-    max-width: 120px;
+  .page-inner {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    column-gap: 15px;
+    row-gap: 15px;
+    width: 100%;
+    align-content: start;
+    justify-items: stretch;
+    /* NEW: baris grid fix agar tidak berubah-ubah saat zoom/teks panjang */
+    grid-auto-rows: 110px;
   }
+
+  .card-pages {
+    height: 100%;
+    align-content: center !important;
+  }
+
+  .card-left { flex: 0 0 180px; max-width: 180px; }
+  .card-right { flex: 0 0 120px; max-width: 120px; }
 }
 
+
+/* ===== Tablet landscape - (max-width:1399px) & (min-width:769px) ===== */
 @media screen and (max-width: 1399px) and (min-width: 769px) {
   /* Aktifkan scroll vertikal untuk body */
   html,
   body {
-    overflow-y: auto; /* Izinkan scroll vertikal */
-    overflow-x: hidden; /* Sembunyikan scroll horizontal */
-    height: auto; /* Ubah dari 100% ke auto */
-    min-height: 100vh; /* Pastikan minimal setinggi viewport */
-  }
-
-  /* Main container disesuaikan untuk mobile */
-  .main-container {
-    height: auto; /* Ubah dari 100vh ke auto */
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: auto;
     min-height: 100vh;
-    overflow-x: hidden; /* Cegah overflow horizontal */
-    padding: 0 15px; /* Padding yang konsisten */
-    max-width: 100vw; /* Batasi lebar maksimal */
-    box-sizing: border-box; /* Include padding dalam perhitungan lebar */
   }
 
-  /* Sembunyikan navigation arrows untuk mobile */
+  .main-container {
+    height: auto;
+    min-height: 100vh;
+    overflow-x: hidden;
+    padding: 0 15px;
+    max-width: 100vw;
+    box-sizing: border-box;
+  }
+
   .left-hover-area,
   .right-hover-area {
     display: none;
   }
 
-  /* Sembunyikan page indicators untuk mobile */
   .page-indicators {
     display: none;
   }
 
-  /* Content wrapper disesuaikan */
   .content-wrapper {
     height: auto;
     max-height: none;
-    max-width: 100%; /* Batasi lebar maksimal */
-    width: 100%; /* Gunakan full width */
-    overflow-x: hidden; /* Cegah overflow horizontal */
-    padding-bottom: 40px;
-    margin-top: 20px; /* Reset margin */
-    box-sizing: border-box;
-  }
-
-  /* Card pages menjadi satu kolom vertikal */
-  .card-pages {
-    display: block; /* Ubah dari flex ke block */
+    max-width: 100%;
     width: 100%;
-    max-width: 100%; /* Batasi lebar maksimal */
-    height: auto; /* Ubah dari 750px ke auto */
-    position: static; /* Ubah dari relative ke static */
-    transform: none; /* Hilangkan transform untuk carousel */
-    transition: none; /* Hilangkan transition */
-    overflow-x: hidden; /* Cegah overflow horizontal */
+    overflow-x: hidden;
+    padding-bottom: 40px;
+    margin-top: 20px;
     box-sizing: border-box;
+    
   }
 
-  /* Page menjadi container biasa, bukan grid 2 kolom */
-  .page {
-    min-width: auto; /* Ubah dari 100% ke auto */
-    width: 100%; /* Full width */
-    max-width: 100%; /* Batasi lebar maksimal */
-    display: block; /* Ubah dari grid ke block */
+  .card-pages {
+    display: block;
+    width: 100%;
+    max-width: 100%;
     height: auto;
-    padding: 0; /* Hilangkan padding */
-    margin-bottom: 0; /* Hilangkan margin */
-    overflow-x: hidden; /* Cegah overflow horizontal */
+    position: static;
+    transform: none;
+    transition: none;
+    overflow-x: hidden;
     box-sizing: border-box;
   }
 
-  /* Card container disesuaikan */
+  .page {
+    min-width: auto;
+    width: 100%;
+    max-width: 100%;
+    display: block;
+    height: auto;
+    padding: 0;
+    margin-bottom: 0;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+
+  .page-inner {
+    display: block;
+    width: 100%;
+  }
+
   .card-container {
     width: 100%;
-    max-width: 100%; /* Batasi lebar maksimal */
-    min-width: auto; /* Reset min-width */
-    margin-bottom: 15px; /* Tambah jarak antar card */
+    max-width: 100%;
+    min-width: auto;
+    margin-bottom: 15px;
     box-sizing: border-box;
-    overflow-x: hidden; /* Cegah overflow horizontal */
+    overflow-x: hidden;
   }
 
-  /* Card disesuaikan untuk mobile */
   .card {
     width: 100%;
-    max-width: 100%; /* Batasi lebar maksimal */
+    max-width: 100%;
     height: auto;
-    min-height: 120px; /* Sedikit lebih tinggi untuk mobile */
+    min-height: 120px;
     flex-direction: column;
     gap: 12px;
     padding: 15px;
-    margin-bottom: 0; /* Hilangkan margin card */
-    box-sizing: border-box; /* Include padding dalam perhitungan lebar */
-    overflow: hidden; /* Cegah overflow dalam card */
-    margin-left: 35px; /* Reset margin */
+    margin-bottom: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+    margin-left: 35px;
     margin-right: 35px;
   }
 
-  /* Card sections disesuaikan */
   .card-left {
     flex: none;
     width: 100%;
-    max-width: 100%; /* Batasi lebar maksimal */
+    max-width: 100%;
     height: auto;
     border-right: none;
     border-bottom: 2px solid rgba(255, 255, 255, 0.86);
@@ -394,21 +413,20 @@ video {
     text-align: center;
     font-size: 16px;
     box-sizing: border-box;
-    overflow: hidden; /* Cegah text overflow */
+    overflow: hidden;
   }
 
   .card-middle,
   .card-right {
     flex: none;
     width: 100%;
-    max-width: 100%; /* Batasi lebar maksimal */
+    max-width: 100%;
     align-items: center;
     text-align: center;
     box-sizing: border-box;
-    overflow: hidden; /* Cegah overflow */
+    overflow: hidden;
   }
 
-  /* Dates disesuaikan untuk mobile - full width dengan 2 kolom */
   .dates {
     flex-direction: row;
     justify-content: space-between;
@@ -416,7 +434,6 @@ video {
     width: 100%;
   }
 
-  /* Date labels mengambil setengah lebar masing-masing */
   .date-label {
     flex: 1;
     width: 48%;
@@ -431,17 +448,15 @@ video {
     display: block;
   }
 
-  /* Font size disesuaikan untuk mobile */
   .location {
     font-size: 16px;
-    /* Memastikan text clamp tetap aktif untuk layar ≤1399px */
     line-height: 1.25;
     max-height: calc(1.25em * 2);
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
     line-clamp: 2;
-    white-space: normal; /* Izinkan wrap text */
+    white-space: normal;
     overflow: hidden;
     text-overflow: ellipsis;
     overflow-wrap: anywhere;
@@ -449,113 +464,107 @@ video {
 
   .request {
     font-size: 14px;
-    white-space: normal; /* Izinkan wrap text */
+    white-space: normal;
     overflow: visible;
     text-overflow: unset;
+  }
+
+  #playPauseBtn {
+    display: none !important;
   }
 }
 
 /* ===== MOBILE RESPONSIF: 768px kebawah ===== */
 @media (max-width: 768px) {
-  /* Aktifkan scroll vertikal untuk body */
   html,
   body {
-    overflow-y: auto; /* Izinkan scroll vertikal */
-    overflow-x: hidden; /* Sembunyikan scroll horizontal */
-    height: auto; /* Ubah dari 100% ke auto */
-    min-height: 100vh; /* Pastikan minimal setinggi viewport */
-  }
-
-  /* Main container disesuaikan untuk mobile */
-  .main-container {
-    height: auto; /* Ubah dari 100vh ke auto */
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: auto;
     min-height: 100vh;
-    overflow-x: hidden; /* Cegah overflow horizontal */
-    padding: 0 15px; /* Padding yang konsisten */
-    max-width: 100vw; /* Batasi lebar maksimal */
-    box-sizing: border-box; /* Include padding dalam perhitungan lebar */
   }
 
-  /* Sembunyikan navigation arrows untuk mobile */
+  .main-container {
+    height: auto;
+    min-height: 100vh;
+    overflow-x: hidden;
+    padding: 0 15px;
+    max-width: 100vw;
+    box-sizing: border-box;
+  }
+
   .left-hover-area,
   .right-hover-area {
     display: none;
   }
 
-  /* Sembunyikan page indicators untuk mobile */
   .page-indicators {
     display: none;
   }
 
-  /* Content wrapper disesuaikan */
   .content-wrapper {
     height: auto;
     max-height: none;
-    max-width: 100%; /* Batasi lebar maksimal */
-    width: 100%; /* Gunakan full width */
-    overflow-x: hidden; /* Cegah overflow horizontal */
-    padding-bottom: 40px;
-    margin-top: 20px; /* Reset margin */
-    box-sizing: border-box;
-  }
-
-  /* Card pages menjadi satu kolom vertikal */
-  .card-pages {
-    display: block; /* Ubah dari flex ke block */
+    max-width: 100%;
     width: 100%;
-    max-width: 100%; /* Batasi lebar maksimal */
-    height: auto; /* Ubah dari 750px ke auto */
-    position: static; /* Ubah dari relative ke static */
-    transform: none; /* Hilangkan transform untuk carousel */
-    transition: none; /* Hilangkan transition */
-    overflow-x: hidden; /* Cegah overflow horizontal */
+    overflow-x: hidden;
+    padding-bottom: 40px;
+    margin-top: 20px;
     box-sizing: border-box;
   }
 
-  /* Page menjadi container biasa, bukan grid 2 kolom */
-  .page {
-    min-width: auto; /* Ubah dari 100% ke auto */
-    width: 100%; /* Full width */
-    max-width: 100%; /* Batasi lebar maksimal */
-    display: block; /* Ubah dari grid ke block */
+  .card-pages {
+    display: block;
+    width: 100%;
+    max-width: 100%;
     height: auto;
-    padding: 0; /* Hilangkan padding */
-    margin-bottom: 0; /* Hilangkan margin */
-    overflow-x: hidden; /* Cegah overflow horizontal */
+    position: static;
+    transform: none;
+    transition: none;
+    overflow-x: hidden;
     box-sizing: border-box;
   }
 
-  /* Card container disesuaikan */
+  .page {
+    min-width: auto;
+    width: 100%;
+    max-width: 100%;
+    display: block;
+    height: auto;
+    padding: 0;
+    margin-bottom: 0;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+
   .card-container {
     width: 100%;
-    max-width: 100%; /* Batasi lebar maksimal */
-    min-width: auto; /* Reset min-width */
-    margin-bottom: 15px; /* Tambah jarak antar card */
+    max-width: 100%;
+    min-width: auto;
+    margin-bottom: 15px;
     box-sizing: border-box;
-    overflow-x: hidden; /* Cegah overflow horizontal */
+    overflow-x: hidden;
   }
 
-  /* Card disesuaikan untuk mobile */
   .card {
     width: 100%;
-    max-width: 100%; /* Batasi lebar maksimal */
+    max-width: 100%;
     height: auto;
-    min-height: 120px; /* Sedikit lebih tinggi untuk mobile */
+    min-height: 120px;
     flex-direction: column;
     gap: 12px;
     padding: 15px;
-    margin-bottom: 0; /* Hilangkan margin card */
-    box-sizing: border-box; /* Include padding dalam perhitungan lebar */
-    overflow: hidden; /* Cegah overflow dalam card */
-    margin-left: 20px; /* Reset margin */
+    margin-bottom: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+    margin-left: 20px;
     margin-right: 20px;
   }
 
-  /* Card sections disesuaikan */
   .card-left {
     flex: none;
     width: 100%;
-    max-width: 100%; /* Batasi lebar maksimal */
+    max-width: 100%;
     height: auto;
     border-right: none;
     border-bottom: 2px solid rgba(255, 255, 255, 0.86);
@@ -566,21 +575,20 @@ video {
     text-align: center;
     font-size: 16px;
     box-sizing: border-box;
-    overflow: hidden; /* Cegah text overflow */
+    overflow: hidden;
   }
 
   .card-middle,
   .card-right {
     flex: none;
     width: 100%;
-    max-width: 100%; /* Batasi lebar maksimal */
+    max-width: 100%;
     align-items: center;
     text-align: center;
     box-sizing: border-box;
-    overflow: hidden; /* Cegah overflow */
+    overflow: hidden;
   }
 
-  /* Dates disesuaikan untuk mobile - full width dengan 2 kolom */
   .dates {
     flex-direction: row;
     justify-content: space-between;
@@ -588,7 +596,6 @@ video {
     width: 100%;
   }
 
-  /* Date labels mengambil setengah lebar masing-masing */
   .date-label {
     flex: 1;
     width: 48%;
@@ -603,17 +610,15 @@ video {
     display: block;
   }
 
-  /* Font size disesuaikan untuk mobile */
   .location {
     font-size: 16px;
-    /* Memastikan text clamp tetap aktif untuk mobile */
     line-height: 1.25;
     max-height: calc(1.25em * 2);
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
     line-clamp: 2;
-    white-space: normal; /* Izinkan wrap text */
+    white-space: normal;
     overflow: hidden;
     text-overflow: ellipsis;
     overflow-wrap: anywhere;
@@ -621,23 +626,25 @@ video {
 
   .request {
     font-size: 14px;
-    white-space: normal; /* Izinkan wrap text */
+    white-space: normal;
     overflow: visible;
     text-overflow: unset;
+  }
+
+  #playPauseBtn {
+    display: none !important;
   }
 }
 
 /* ===== MOBILE KECIL: 480px kebawah ===== */
 @media (max-width: 480px) {
-  /* Main container padding lebih kecil */
   .main-container {
-    padding: 0 10px; /* Padding yang lebih kecil */
+    padding: 0 10px;
     max-width: 100vw;
     overflow-x: hidden;
     box-sizing: border-box;
   }
 
-  /* Content wrapper margin dan padding disesuaikan */
   .content-wrapper {
     margin-top: 10px;
     padding-bottom: 30px;
@@ -649,7 +656,6 @@ video {
     box-sizing: border-box;
   }
 
-  /* Card pages untuk mobile kecil */
   .card-pages {
     width: 100%;
     max-width: 100%;
@@ -657,7 +663,6 @@ video {
     box-sizing: border-box;
   }
 
-  /* Page untuk mobile kecil */
   .page {
     width: 100%;
     max-width: 100%;
@@ -665,7 +670,6 @@ video {
     box-sizing: border-box;
   }
 
-  /* Card container untuk mobile kecil */
   .card-container {
     width: 100%;
     max-width: 100%;
@@ -673,7 +677,6 @@ video {
     box-sizing: border-box;
   }
 
-  /* Card padding lebih kecil */
   .card {
     width: 100%;
     max-width: 100%;
@@ -684,7 +687,6 @@ video {
     overflow: hidden;
   }
 
-  /* Card left font size lebih kecil */
   .card-left {
     width: 100%;
     max-width: 100%;
@@ -695,10 +697,8 @@ video {
     overflow: hidden;
   }
 
-  /* Font size lebih kecil untuk mobile kecil */
   .location {
     font-size: 14px;
-    /* Memastikan text clamp tetap aktif untuk mobile kecil */
     line-height: 1.25;
     max-height: calc(1.25em * 2);
     display: -webkit-box;
@@ -724,12 +724,10 @@ video {
     padding: 3px 6px;
   }
 
-  /* Dates gap disesuaikan - tetap 2 kolom penuh */
   .dates {
     gap: 6px;
   }
 
-  /* Date labels untuk mobile kecil */
   .date-label {
     flex: 1;
     width: 48%;
@@ -741,5 +739,9 @@ video {
     padding: 4px 2px;
     text-align: center;
     display: block;
+  }
+
+  #playPauseBtn {
+    display: none !important;
   }
 }

@@ -2,17 +2,15 @@ document.addEventListener("DOMContentLoaded", function () {
   const projects = (window.PROJECTS || []).slice();
   const SLIDE_INTERVAL = 10000;
 
-  // === Paksa desktop-mode (>=1400px) bila datang dari M-Loc, tapi jangan paksa HP
-  const FORCE_QS = "force1400";
-  const FORCE_MIN_WIDTH = 769; // ubah 1400 jika tablet juga tidak ingin dipaksa
-  const canHonorForce = () => window.innerWidth >= FORCE_MIN_WIDTH;
+  // === Konstanta pembatas tinggi (mengikuti m_loc)
+  const HEIGHT_RULE_MIN = 1400;  // mulai terapkan pembatas tinggi
+  const INDICATOR_GAP   = 10;    // jarak dari indikator ke bawah wrapper
 
-  let force1400 = false;
-  try {
-    const qs = new URLSearchParams(window.location.search);
-    const flagged = qs.get(FORCE_QS) === "1" || sessionStorage.getItem(FORCE_QS) === "1";
-    force1400 = flagged && canHonorForce();
-  } catch {}
+  // === Ukuran kartu & gap (sinkron dengan CSS desktop .card height & .page gap)
+  const CARD_HEIGHT_PX = 105;
+  const ROW_GAP_PX = 15;         // .page { gap: 15px; }
+  const BASE_DESKTOP = 4;        // baseline normal desktop
+  const BASE_FULLSCREEN = 5;     // baseline saat F11 fullscreen
 
   // Elemen kontrol
   const playPauseButton = document.getElementById("playPauseBtn");
@@ -25,19 +23,20 @@ document.addEventListener("DOMContentLoaded", function () {
   let autoSlideInterval = null;
   let isAutoSliding = true;
 
+  const contentWrapper = document.querySelector(".content-wrapper");
   const cardPagesContainer = document.getElementById("cardPages");
   const pageIndicatorsContainer = document.getElementById("pageIndicators");
   const leftArrow = document.getElementById("leftArrow");
   const rightArrow = document.getElementById("rightArrow");
 
   // ===== Helpers
-  // (A) Layout desktop (boleh dipaksa dengan force1400)
-  const isDesktopWidth = () => (force1400 ? true : window.innerWidth >= 1400);
+  // (A) Layout desktop murni dari lebar layar nyata (tanpa force)
+  const isDesktopWidth = () => window.innerWidth >= 1400;
 
-  // (B) IZIN autoslide (harus mengikuti lebar layar nyata, TANPA force)
+  // (B) IZIN autoslide (harus mengikuti lebar layar nyata)
   const isAutoSlideAllowed = () => window.innerWidth >= 1400;
 
-  // (C) Fullscreen "beneran" (F11 / Fullscreen API), TANPA heuristik zoom
+  // (C) Fullscreen "beneran" (F11 / Fullscreen API)
   function isTrueFullscreen() {
     return !!(
       document.fullscreenElement ||
@@ -47,10 +46,7 @@ document.addEventListener("DOMContentLoaded", function () {
     );
   }
 
-  // 5 kartu HANYA bila desktop + benar2 fullscreen; selain itu 4 kartu
-  const getCardsPerPage = () => (isDesktopWidth() && isTrueFullscreen() ? 5 : 4);
-
-  // --- page height
+  // --- page height dasar (sebelum “cap” oleh indikator)
   function getMaxPageHeight() {
     let maxH = 0;
     const pages = cardPagesContainer.querySelectorAll(".page");
@@ -63,26 +59,107 @@ document.addEventListener("DOMContentLoaded", function () {
       cardPagesContainer.style.height = "";
       return;
     }
-    const cpp = getCardsPerPage();
-    if (cpp === 5) {
+    const cpp = getCardsPerPageDynamic(); // ← gunakan dinamis
+    if (cpp >= 5 && isTrueFullscreen()) {
+      // fullscreen: biarkan tinggi menyesuaikan konten (agar 5+ kartu muat)
       requestAnimationFrame(() => {
         const h = getMaxPageHeight();
         cardPagesContainer.style.height = (h ? (h + 12) : 660) + "px";
+        requestAnimationFrame(capContentWrapperByIndicators);
       });
     } else {
+      // non-FS: set default, lalu akan "di-cap" oleh indikator
       cardPagesContainer.style.height = "500px";
+      requestAnimationFrame(capContentWrapperByIndicators);
     }
   }
 
-  function applyFullscreenStyling() {
-    const contentWrapper = document.querySelector('.content-wrapper');
-    if (isTrueFullscreen()) {
-      if (pageIndicatorsContainer) pageIndicatorsContainer.style.bottom = '30px';
-      if (contentWrapper) contentWrapper.style.paddingTop = '20px';
-    } else {
-      if (pageIndicatorsContainer) pageIndicatorsContainer.style.bottom = '20px';
-      if (contentWrapper) contentWrapper.style.paddingTop = '12px';
+  // === NEW: hitung tinggi inner yang tersedia di dalam .content-wrapper (setara logika cap)
+  function getAvailableHeightPx() {
+    if (!contentWrapper || !pageIndicatorsContainer || !isDesktopWidth()) return 0;
+
+    const applyRule = (window.innerWidth >= HEIGHT_RULE_MIN);
+    // walaupun applyRule false, di desktop kita tetap ingin perkirakan tinggi
+    const indRect = pageIndicatorsContainer.getBoundingClientRect();
+    const cwRect  = contentWrapper.getBoundingClientRect();
+
+    let target = Math.floor(indRect.top - INDICATOR_GAP - cwRect.top);
+    if (!Number.isFinite(target) || target <= 0) return 0;
+
+    const cs = getComputedStyle(contentWrapper);
+    const paddings = (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0);
+    const borders  = (parseFloat(cs.borderTopWidth) || 0) + (parseFloat(cs.borderBottomWidth) || 0);
+    const innerH = Math.max(0, target - paddings - borders); // tinggi untuk .card-pages
+
+    return innerH || 0;
+  }
+
+  // === NEW: hitung jumlah kartu per halaman secara dinamis berdasar sisa tinggi
+  function getCardsPerPageDynamic() {
+    if (!isDesktopWidth()) {
+      // di tablet/mobile, kita jadikan satu halaman panjang (pagination tidak dipakai)
+      return projects.length || 1;
     }
+
+    const baseline = isTrueFullscreen() ? BASE_FULLSCREEN : BASE_DESKTOP;
+    const avail = getAvailableHeightPx();
+
+    if (!avail) return baseline; // fallback aman
+
+    // tinggi baseline (mis. 4 kartu) = n*card + (n-1)*gap
+    const baselineHeight = (baseline * CARD_HEIGHT_PX) + ((baseline - 1) * ROW_GAP_PX);
+    const perCard = CARD_HEIGHT_PX + ROW_GAP_PX;
+
+    // jika sisa >= 120px → tambah 1 kartu; >=240px → tambah 2 kartu; dst.
+    const extra = Math.max(0, Math.floor((avail - baselineHeight) / perCard));
+    const result = baseline + extra;
+
+    return Math.max(baseline, result);
+  }
+
+  // === Batasi tinggi .content-wrapper agar berhenti 10–30px di atas page indicators
+  function capContentWrapperByIndicators() {
+    if (!contentWrapper || !pageIndicatorsContainer) return;
+
+    const applyRule = (window.innerWidth >= HEIGHT_RULE_MIN);
+    if (!applyRule) {
+      contentWrapper.style.maxHeight = "";
+      return;
+    }
+
+    const indRect = pageIndicatorsContainer.getBoundingClientRect();
+    const cwRect  = contentWrapper.getBoundingClientRect();
+
+    let target = Math.floor(indRect.top - INDICATOR_GAP - cwRect.top);
+    if (!Number.isFinite(target) || target <= 0) {
+      contentWrapper.style.maxHeight = "";
+      return;
+    }
+
+    contentWrapper.style.maxHeight = target + "px";
+    contentWrapper.style.overflow = "hidden";
+
+    const cs = getComputedStyle(contentWrapper);
+    const paddings = (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0);
+    const borders  = (parseFloat(cs.borderTopWidth) || 0) + (parseFloat(cs.borderBottomWidth) || 0);
+    const innerH = Math.max(0, target - paddings - borders);
+
+    cardPagesContainer.style.height = innerH + "px";
+  }
+
+  function applyFullscreenStyling() {
+    if (!pageIndicatorsContainer) return;
+
+    if (isTrueFullscreen()) {
+      pageIndicatorsContainer.style.bottom = "30px";
+      if (contentWrapper) contentWrapper.style.paddingTop = "20px";
+    } else {
+      pageIndicatorsContainer.style.bottom = "20px";
+      if (contentWrapper) contentWrapper.style.paddingTop = "12px";
+    }
+
+    // Setelah posisi indikator berubah, hitung ulang cap
+    requestAnimationFrame(capContentWrapperByIndicators);
   }
 
   // ===== UI / Auto-slide
@@ -92,7 +169,6 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function startAutoSlide() {
-    // Guard: jangan jalan kalau tidak diizinkan (≤1399)
     if (!isAutoSlideAllowed()) return;
     stopAutoSlide();
     if (!isAutoSliding) return;
@@ -100,7 +176,6 @@ document.addEventListener("DOMContentLoaded", function () {
       if (currentPage < totalPages - 1) {
         showPage(currentPage + 1);
       } else {
-        // halaman terakhir → pindah modul
         if (typeof window.goToNextNav === "function") {
           window.goToNextNav();
         } else {
@@ -116,11 +191,9 @@ document.addEventListener("DOMContentLoaded", function () {
       autoSlideInterval = null;
     }
   }
-  // Ekspos untuk handler global (single-page)
   window.stopAutoSlide = stopAutoSlide;
 
   function toggleAutoSlide() {
-    // Blok jika tidak diizinkan (≤1399)
     if (!isAutoSlideAllowed()) return;
     isAutoSliding = !isAutoSliding;
     updatePlayPauseIcon();
@@ -128,7 +201,7 @@ document.addEventListener("DOMContentLoaded", function () {
     else stopAutoSlide();
   }
 
-  // ===== Card templating (tetap seperti sebelumnya)
+  // ===== Card templating
   function createCardHTML(project) {
     const w = window.innerWidth;
     const isTablet = w <= 1399 && w >= 769;
@@ -198,7 +271,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // ===== Paging
   function generatePages() {
     const pages = [];
-    const CARDS_PER_PAGE = getCardsPerPage();
+    const CARDS_PER_PAGE = getCardsPerPageDynamic(); // ← dinamis berdasarkan sisa tinggi
     for (let i = 0; i < projects.length; i += CARDS_PER_PAGE) {
       pages.push(projects.slice(i, i + CARDS_PER_PAGE));
     }
@@ -230,13 +303,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     bindIndicatorEvents();
-    applyContainerHeight();
-    applyFullscreenStyling();
-
-    // Optional: langsung re-check visibilitas kontrol setelah render
-    if (typeof window.handleSinglePageCarousel === 'function') {
-      window.handleSinglePageCarousel();
-    }
+    applyContainerHeight();              // set tinggi awal (500px / dinamis)
+    applyFullscreenStyling();            // ini juga akan memanggil cap via rAF
+    requestAnimationFrame(capContentWrapperByIndicators); // jaga-jaga
   }
 
   function bindIndicatorEvents() {
@@ -256,6 +325,8 @@ document.addEventListener("DOMContentLoaded", function () {
       const offset = -index * 100;
       cardPagesContainer.style.transform = `translateX(${offset}%)`;
       updateIndicators();
+      // Tinggi konten bisa berubah antar-halaman → cap ulang
+      requestAnimationFrame(capContentWrapperByIndicators);
     }
   }
 
@@ -265,7 +336,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // === Auto-pause rule untuk V-Trip: pause saat screen <= 1399px
+  // === Auto-pause rule untuk V-Trip: pause saat screen ≤ 1399px
   function applyResponsiveBehavior() {
     if (!isAutoSlideAllowed()) {
       isAutoSliding = false;
@@ -274,12 +345,13 @@ document.addEventListener("DOMContentLoaded", function () {
     } else {
       if (isAutoSliding) startAutoSlide();
     }
+    requestAnimationFrame(capContentWrapperByIndicators);
   }
 
   // ===== Controls
   playPauseButton?.addEventListener("click", (e) => {
     e.stopPropagation();
-    if (!isAutoSlideAllowed()) return; // blok kalau ≤1399
+    if (!isAutoSlideAllowed()) return;
     toggleAutoSlide();
   });
 
@@ -295,37 +367,33 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   leftArrow?.addEventListener("click", function (e) {
-  e.stopPropagation();
-  stopAutoSlide();
-  if (currentPage > 0) {
-    showPage(currentPage - 1);
-  } else {
-    // sudah di halaman pertama -> lintas modul ke sebelumnya
-    if (typeof window.goToPrevNav === "function") window.goToPrevNav();
-    else showPage(totalPages - 1);
-  }
-  if (isAutoSliding && window.innerWidth >= 1400) startAutoSlide();
-});
+    e.stopPropagation();
+    stopAutoSlide();
+    if (currentPage > 0) {
+      showPage(currentPage - 1);
+    } else {
+      if (typeof window.goToNextNav === "function") window.goToNextNav();
+      else showPage(0);
+    }
+    if (isAutoSliding && window.innerWidth >= 1400) startAutoSlide();
+  });
 
-rightArrow?.addEventListener("click", function (e) {
-  e.stopPropagation();
-  stopAutoSlide();
-  if (currentPage < totalPages - 1) {
-    showPage(currentPage + 1);
-  } else {
-    // sudah halaman terakhir -> lintas modul ke berikutnya
-    if (typeof window.goToNextNav === "function") window.goToNextNav();
-    else showPage(0);
-  }
-  if (isAutoSliding && window.innerWidth >= 1400) startAutoSlide();
-});
-
+  rightArrow?.addEventListener("click", function (e) {
+    e.stopPropagation();
+    stopAutoSlide();
+    if (currentPage < totalPages - 1) {
+      showPage(currentPage + 1);
+    } else {
+      if (typeof window.goToNextNav === "function") window.goToNextNav();
+      else showPage(0);
+    }
+    if (isAutoSliding && window.innerWidth >= 1400) startAutoSlide();
+  });
 
   // ===== Init
   renderPages();
   showPage(0);
 
-  // Mulai: ON hanya jika lebar nyata >= 1400
   isAutoSliding = isAutoSlideAllowed();
   updatePlayPauseIcon();
   if (isAutoSliding) startAutoSlide();
@@ -339,6 +407,7 @@ rightArrow?.addEventListener("click", function (e) {
     applyContainerHeight();
     applyResponsiveBehavior();
     applyFullscreenStyling();
+    requestAnimationFrame(capContentWrapperByIndicators);
   }
 
   let resizeT;
@@ -350,15 +419,4 @@ rightArrow?.addEventListener("click", function (e) {
   document.addEventListener("webkitfullscreenchange", reflow);
   document.addEventListener("mozfullscreenchange", reflow);
   document.addEventListener("MSFullscreenChange", reflow);
-
-  // === Bersihkan flag & URL jika force1400 dipakai (hanya untuk layout)
-  if (force1400) {
-    try {
-      sessionStorage.removeItem(FORCE_QS);
-      const u = new URL(window.location.href);
-      u.searchParams.delete(FORCE_QS);
-      window.history.replaceState({}, "", u.pathname + u.hash);
-    } catch {}
-    document.documentElement.classList.add("force-1400"); // opsional untuk CSS breakpoint
-  }
 });

@@ -231,7 +231,7 @@ video {
   justify-content: center;
   border-top-right-radius: 10px;
   border-bottom-right-radius: 10px;
-  transition: background 0.3s ease;
+  transition: 0.3s ease;
   cursor: default;
   pointer-events: auto;
 }

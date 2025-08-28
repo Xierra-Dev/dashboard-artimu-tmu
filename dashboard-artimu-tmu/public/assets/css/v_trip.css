@@ -16,43 +16,54 @@ body,
   overflow-x: hidden;
 }
 
-/* Desktop Styles untuk zoom 100%-150% - Menggunakan layout dari v_trip.css */
+/* ======================= DESKTOP (>=1400px) ======================= */
 @media screen and (min-width: 1400px) {
   .content-wrapper {
+    flex: 1;
     display: flex;
     justify-content: center;
-    align-items: center;
-    width: 100%;
-    padding-top: 12px;
-    padding-left: 15px;
+    align-items: flex-start;
+    max-width: calc(100% - 50px);
+    max-height: auto;
+    margin: 0 auto;
+    overflow: hidden; /* Desktop: sembunyikan overflow */
+    position: relative;
+    z-index: 1; /* debug border, opsional */
   }
 
   .card-pages {
     display: flex;
-    transition: transform 0.5s ease;
-    width: 99%;
+    transition: transform 0.5s ease, height 0.25s ease;
+    width: 100%;
     height: 500px;
+    margin-bottom: 10px;
+    align-items: flex-start;
+    border: 1px solid rgb(211, 137, 0);
   }
 
   .page {
     min-width: 100%;
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-auto-rows: auto;
     gap: 15px;
     column-gap: 2px;
-    grid-template-columns: repeat(1, 1fr);
-    grid-template-rows: repeat(5, 1fr);
+    height: 100%;            /* isi tinggi kontainer */
+    align-content: start;   /* center isi grid vertikal */
     padding: 10px 20px;
     margin-top: 3px;
     box-sizing: border-box;
-    grid-auto-rows: auto;
-    justify-content: center;
-    justify-items: center;
+    justify-items: stretch;
   }
 
+  .card-container { width: 100%; }
+
   .card {
+    width: 100%;
+    max-width: 100%;
     height: 105px;
-    width: 1300px;
-    max-width: 99%;
+    box-sizing: border-box;
+
     backdrop-filter: blur(20px);
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -63,6 +74,9 @@ body,
     display: flex;
     flex-direction: row;
     align-items: center;
+
+    /* debug border, opsional */
+    border: 1px solid rgb(211, 138, 1);
   }
 
   .card:nth-child(odd) {
@@ -201,15 +215,8 @@ body,
     text-align: center;
   }
 
-  .date-value.leave {
-    background-color: #00d7a5;
-    min-width: 225px;
-  }
-
-  .date-value.return {
-    background-color: #d89eff;
-    min-width: 225px;
-  }
+  .date-value.leave  { background-color: #00d7a5; min-width: 225px; }
+  .date-value.return { background-color: #d89eff; min-width: 225px; }
 
   /* Navigation arrows untuk desktop */
   .nav-arrow {
@@ -234,15 +241,9 @@ body,
     transform: translateY(-50%) scale(1.1);
   }
 
-  .nav-arrow.left {
-    left: 20px;
-  }
+  .nav-arrow.left { left: 20px; }
+  .nav-arrow.right { right: 20px; }
 
-  .nav-arrow.right {
-    right: 20px;
-  }
-
-  /* Menampilkan page indicators pada desktop */
   .page-indicators {
     display: flex !important;
     justify-content: center;
@@ -276,17 +277,15 @@ body,
     transform: scale(1.1);
   }
 
-  /* Berlaku umum di desktop; sesuaikan jika perlu scope-nya */
+  /* Single page state */
   .card-pages.single-page {
     display: block;
     height: auto !important;
     transform: none !important;
   }
-
 }
 
-/* Tablet dan zoom 150%-175% - Transisi ke layout vertikal */
-/* Mengubah breakpoint tablet menjadi max-width: 1399px */
+/* ======================= TABLET (769px–1399px) ======================= */
 @media screen and (max-width: 1399px) and (min-width: 769px) {
   .content-wrapper {
     padding: 10px;
@@ -331,15 +330,8 @@ body,
     box-sizing: border-box;
   }
 
-  .card:nth-child(odd) {
-    background-color: rgba(255, 255, 255, 0.2);
-    color: black;
-  }
-
-  .card:nth-child(even) {
-    background-color: rgba(0, 0, 0, 0.2);
-    color: white;
-  }
+  .card:nth-child(odd) { background-color: rgba(255, 255, 255, 0.2); color: black; }
+  .card:nth-child(even){ background-color: rgba(0, 0, 0, 0.2); color: white; }
 
   .card-left {
     flex: none;
@@ -362,17 +354,8 @@ body,
     font-size: 16px;
   }
 
-  .card-left .plate {
-    font-size: 20px;
-    margin-left: 0;
-    margin-top: 0;
-  }
-
-  .card-left .name {
-    font-size: 14px;
-    margin-top: 0;
-    margin-left: 0;
-  }
+  .card-left .plate { font-size: 20px; margin-left: 0; margin-top: 0; }
+  .card-left .name  { font-size: 14px; margin-top: 0; margin-left: 0; }
 
   .card-middle {
     width: 100%;
@@ -419,11 +402,7 @@ body,
     order: 0;
   }
 
-  .request-label {
-    font-size: 12.5px;
-    color: orange;
-    font-weight: bold;
-  }
+  .request-label { font-size: 12.5px; color: orange; font-weight: bold; }
 
   .request-value {
     min-width: 160px;
@@ -446,7 +425,6 @@ body,
     align-items: center;
     order: 2;
     margin-left: auto;
-
   }
 
   .date-group {
@@ -458,20 +436,9 @@ body,
   }
 
   .date-title-from,
-  .date-title-return {
-    font-size: 11px;
-    text-transform: uppercase;
-    margin-bottom: 6px;
-    font-weight: bold;
-  }
-
-  .date-title-from {
-    color: #00d7a5;
-  }
-
-  .date-title-return {
-    color: #d89eff;
-  }
+  .date-title-return { font-size: 11px; text-transform: uppercase; margin-bottom: 6px; font-weight: bold; }
+  .date-title-from   { color: #00d7a5; }
+  .date-title-return { color: #d89eff; }
 
   .date-value {
     width: 100%;
@@ -485,27 +452,21 @@ body,
     text-align: center;
   }
 
-  .date-value.leave {
-    background-color: #00d7a5;
-  }
+  .date-value.leave  { background-color: #00d7a5; }
+  .date-value.return { background-color: #d89eff; }
 
-  .date-value.return {
-    background-color: #d89eff;
-  }
-
-  /* Hide all carousel elements on mobile */
+  /* sembunyikan elemen carousel di tablet */
   .left-hover-area,
   .right-hover-area,
   .arrow-button,
   .arrow-button-right,
   .page-indicators,
   .indicator-dot,
-  .nav-arrow {
-    display: none !important;
-  }
+  .nav-arrow { display: none !important; }
 }
 
-/* Mobile styles untuk zoom >=175% dan mobile devices - Menggunakan layout dari 2_v_trip.css */
+/* ======================= MOBILE (<=768px) ======================= */
+/* PERUBAHAN UTAMA: .dates menjadi grid 2 kolom penuh (50%–50%) */
 @media screen and (max-width: 768px) {
   .content-wrapper {
     padding: 10px;
@@ -550,15 +511,8 @@ body,
     box-sizing: border-box;
   }
 
-  .card:nth-child(odd) {
-    background-color: rgba(255, 255, 255, 0.2);
-    color: black;
-  }
-
-  .card:nth-child(even) {
-    background-color: rgba(0, 0, 0, 0.2);
-    color: white;
-  }
+  .card:nth-child(odd) { background-color: rgba(255, 255, 255, 0.2); color: black; }
+  .card:nth-child(even){ background-color: rgba(0, 0, 0, 0.2); color: white; }
 
   .card-left {
     flex: none;
@@ -581,17 +535,8 @@ body,
     font-size: 16px;
   }
 
-  .card-left .plate {
-    font-size: 20px;
-    margin-left: 0;
-    margin-top: 0;
-  }
-
-  .card-left .name {
-    font-size: 14px;
-    margin-top: 0;
-    margin-left: 0;
-  }
+  .card-left .plate { font-size: 20px; margin-left: 0; margin-top: 0; }
+  .card-left .name  { font-size: 14px; margin-top: 0; margin-left: 0; }
 
   .card-middle {
     width: 100%;
@@ -612,7 +557,7 @@ body,
     margin-left: 0;
     min-width: auto;
     flex: 0 0 auto;
-    display: flex;
+    display: block;           /* biarkan .dates atur layout */
     transform: none;
     align-items: center;
   }
@@ -637,11 +582,7 @@ body,
     order: 1;
   }
 
-  .request-label {
-    font-size: 12.5px;
-    color: orange;
-    font-weight: bold;
-  }
+  .request-label { font-size: 12.5px; color: orange; font-weight: bold; }
 
   .request-value {
     min-width: 140px;
@@ -656,22 +597,22 @@ body,
     font-style: italic;
   }
 
+  /* === DUA KOLOM PENUH === */
   .dates {
+    display: grid;                     /* ganti dari flex */
+    grid-template-columns: 1fr 1fr;    /* dua kolom sama lebar */
     gap: 10px;
-    width: auto;
-    justify-content: flex-end;
-    display: flex;
-    align-items: center;
+    width: 100%;
+    align-items: stretch;
     order: 2;
-    margin-left: auto;
+    margin-left: 0;
   }
 
   .date-group {
-    min-width: auto;
-    flex: 0 0 auto;
-    align-items: center;
+    width: 100%;
     display: flex;
     flex-direction: column;
+    align-items: stretch;              /* chip melebar penuh */
   }
 
   .date-title-from,
@@ -680,96 +621,62 @@ body,
     text-transform: uppercase;
     margin-bottom: 6px;
     font-weight: bold;
+    text-align: center;                /* opsional */
   }
 
-  .date-title-from {
+  .date-title-from{
     color: #00d7a5;
   }
 
-  .date-title-return {
+  .date-title-return{
     color: #d89eff;
   }
 
   .date-value {
     width: 100%;
-    min-width: 140px;
+    min-width: 0;                      /* override min-width sebelumnya */
     font-size: 10px;
-    padding: 6px 12px;
+    padding: 8px 12px;
     border-radius: 15px;
     font-weight: bold;
     color: black;
     display: inline-block;
     text-align: center;
+    box-sizing: border-box;
   }
 
-  .date-value.leave {
-    background-color: #00d7a5;
-  }
+  .date-value.leave  { background-color: #00d7a5; }
+  .date-value.return { background-color: #d89eff; }
 
-  .date-value.return {
-    background-color: #d89eff;
-  }
-
-  /* Hide all carousel elements on mobile */
+  /* sembunyikan elemen carousel di mobile */
   .left-hover-area,
   .right-hover-area,
   .arrow-button,
   .arrow-button-right,
   .page-indicators,
   .indicator-dot,
-  .nav-arrow {
-    display: none !important;
-  }
+  .nav-arrow { display: none !important; }
 }
 
-/* Small mobile - Optimasi untuk layar sangat kecil */
+/* ======================= SMALL MOBILE (<=480px) ======================= */
+/* Tetap dua kolom penuh pada layar sangat kecil */
 @media screen and (max-width: 480px) {
-  .card {
-    padding: 12px;
-  }
-
-  .card-left .plate {
-    font-size: 18px;
-  }
-
-  .card-left .name {
-    font-size: 13px;
-  }
-
-  .location {
-    font-size: 14px;
-  }
-
-  .request-value {
-    min-width: 100px;
-    font-size: 11px;
-  }
+  .card { padding: 12px; }
+  .card-left .plate { font-size: 18px; }
+  .card-left .name  { font-size: 13px; }
+  .location { font-size: 14px; }
+  .request-value { min-width: 100px; font-size: 11px; }
 
   .dates {
-    flex-direction: row;
+    grid-template-columns: 1fr 1fr;
     gap: 8px;
-    align-items: center;
-    justify-content: flex-end;
   }
 
-  .date-group {
-    width: auto;
-    flex: 0 0 auto;
-  }
+  .date-group { align-items: stretch; }
 
   .date-value {
     padding: 6px 8px;
     font-size: 10px;
-    min-width: 120px;
-  }
-
-}
-
-@media screen and (min-width: 1400px) {
-  .card-pages {
-    display: flex;
-    transition: transform 0.5s ease, height 0.25s ease; /* ← tambah height */
-    width: 99%;
-    height: 500px; /* default 4 kartu, JS akan override saat fullscreen (5 kartu) */
+    min-width: 0;
   }
 }

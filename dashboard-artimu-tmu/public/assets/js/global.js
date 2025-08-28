@@ -159,7 +159,7 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 });
 
-// ====== Helper lintas-halaman + flags paksa layar (NEXT & PREV, satu versi bersih) ======
+// ====== Helper lintas-halaman (NEXT & PREV) — versi bersih TANPA force flags ======
 (function () {
   function buildNavOrder() {
     const menuRoot = document.getElementById("horizontalMenu");
@@ -206,55 +206,20 @@ document.addEventListener("DOMContentLoaded", function() {
     return order[prevIdx];
   }
 
-  // Guard mobile: hanya pasang "paksa desktop" jika lebar nyata >= ambang ini
-  const FORCE_MIN_WIDTH = 769; // ganti ke 1400 kalau tablet juga tak mau dipaksa
-
-  function maybeApplyFlags(curPath, targetPath, urlObj, direction /* 'next'|'prev' */) {
-    if (window.innerWidth < FORCE_MIN_WIDTH) return;
-
-    // M-Loc -> V-Trip (next)  atau  Contract -> V-Trip (prev)
-    if ((curPath.endsWith("/mloc") && targetPath.endsWith("/vtrip") && direction === "next") ||
-        (curPath.endsWith("/contract") && targetPath.endsWith("/vtrip") && direction === "prev")) {
-      urlObj.searchParams.set("force1400", "1");
-      try { sessionStorage.setItem("force1400", "1"); } catch {}
-    }
-
-    // Promag -> M-Loc (next)  atau  V-Trip -> M-Loc (prev)
-    if ((curPath.endsWith("/promag") && targetPath.endsWith("/mloc") && direction === "next") ||
-        (curPath.endsWith("/vtrip") && targetPath.endsWith("/mloc") && direction === "prev")) {
-      urlObj.searchParams.set("force1600", "1");
-      try { sessionStorage.setItem("force1600", "1"); } catch {}
-    }
-  }
-
   function goToNextNav() {
     const next = getNextNavUrl();
     if (!next) return;
-
-    const cur = new URL(location.href);
-    const nxt = new URL(next, location.origin);
-    const curPath = (cur.pathname.replace(/\/+$/, "") || "/");
-    const nxtPath = (nxt.pathname.replace(/\/+$/, "") || "/");
-
-    maybeApplyFlags(curPath, nxtPath, nxt, "next");
     document.getElementById("submenu")?.classList.remove("show");
     document.getElementById("horizontalMenu")?.classList.remove("active");
-    window.location.assign(nxt.href);
+    window.location.assign(next);            // ← tidak menambah query apa pun
   }
 
   function goToPrevNav() {
     const prev = getPrevNavUrl();
     if (!prev) return;
-
-    const cur = new URL(location.href);
-    const prv = new URL(prev, location.origin);
-    const curPath = (cur.pathname.replace(/\/+$/, "") || "/");
-    const prvPath = (prv.pathname.replace(/\/+$/, "") || "/");
-
-    maybeApplyFlags(curPath, prvPath, prv, "prev");
     document.getElementById("submenu")?.classList.remove("show");
     document.getElementById("horizontalMenu")?.classList.remove("active");
-    window.location.assign(prv.href);
+    window.location.assign(prev);            // ← tidak menambah query apa pun
   }
 
   window.getNextNavUrl = getNextNavUrl;
