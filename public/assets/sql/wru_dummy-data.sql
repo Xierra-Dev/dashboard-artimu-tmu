@@ -1,13 +1,4 @@
-CREATE DATABASE IF NOT EXISTS `wru_db`
-  DEFAULT CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
-USE `wru_db`;
 
--- ========================================================
--- 1) MASTER TABLES (people, destination, vehicle)
--- ========================================================
-
--- people (10 rows)
 INSERT INTO `people` (`name`, `created_at`, `updated_at`) VALUES
 ('Andi Saputra',   NOW(), NOW()),
 ('Budi Santoso',   NOW(), NOW()),
@@ -20,7 +11,6 @@ INSERT INTO `people` (`name`, `created_at`, `updated_at`) VALUES
 ('Intan Permata',  NOW(), NOW()),
 ('Joko Susilo',    NOW(), NOW());
 
--- destination (10 rows)
 INSERT INTO `destination` (`destination_name`, `created_at`, `updated_at`) VALUES
 ('Bandung HQ',      NOW(), NOW()),
 ('Jakarta Office',  NOW(), NOW()),
@@ -33,7 +23,6 @@ INSERT INTO `destination` (`destination_name`, `created_at`, `updated_at`) VALUE
 ('Bogor Warehouse', NOW(), NOW()),
 ('Depok Lab',       NOW(), NOW());
 
--- vehicle (10 rows)
 INSERT INTO `vehicle` (`vehicle_name`, `numberPlate`, `created_at`, `updated_at`) VALUES
 ('Toyota Avanza',       'D 1234 AB',  NOW(), NOW()),
 ('Honda BR-V',          'B 5678 CD',  NOW(), NOW()),
@@ -46,12 +35,6 @@ INSERT INTO `vehicle` (`vehicle_name`, `numberPlate`, `created_at`, `updated_at`
 ('Hyundai Staria',      'T 7788 RS',  NOW(), NOW()),
 ('Kia Carnival',        'Z 9900 TU',  NOW(), NOW());
 
--- ========================================================
--- 2) TRANSACTIONAL TABLES (m_loc, v_trip)
---    Pakai INSERT ... SELECT ... JOIN agar FK valid
--- ========================================================
-
--- m_loc (10 rows)
 INSERT INTO `m_loc`
 (`people_id`,`destination_id`,`requestBy`,`leaveDate`,`returnDate`,`created_at`,`updated_at`)
 SELECT p.id, d.id, x.requestBy, x.leaveDate, x.returnDate, NOW(), NOW()
@@ -80,7 +63,6 @@ FROM (
 JOIN `people`      AS p ON p.`name` = x.person
 JOIN `destination` AS d ON d.`destination_name` = x.dest;
 
--- v_trip (10 rows)
 INSERT INTO `v_trip`
 (`people_id`,`vehicle_id`,`destination_id`,`requestBy`,`leaveDate`,`returnDate`,`created_at`,`updated_at`)
 SELECT p.id, v.id, d.id, x.requestBy, x.leaveDate, x.returnDate, NOW(), NOW()
@@ -110,11 +92,6 @@ JOIN `people`      AS p ON p.`name` = x.person
 JOIN `vehicle`     AS v ON v.`numberPlate` = x.plate
 JOIN `destination` AS d ON d.`destination_name` = x.dest;
 
--- ========================================================
--- 3) TMP/STAGING TABLES (tmp_people, tmp_destination, tmp_vehicle)
--- ========================================================
-
--- tmp_people (10 rows)
 INSERT INTO `tmp_people` (`name`, `created_at`) VALUES
 ('Tmp Person 01', NOW()),
 ('Tmp Person 02', NOW()),
@@ -127,7 +104,6 @@ INSERT INTO `tmp_people` (`name`, `created_at`) VALUES
 ('Tmp Person 09', NOW()),
 ('Tmp Person 10', NOW());
 
--- tmp_destination (10 rows)
 INSERT INTO `tmp_destination` (`destination_name`, `created_at`) VALUES
 ('Tmp Destination 01', NOW()),
 ('Tmp Destination 02', NOW()),
@@ -140,7 +116,6 @@ INSERT INTO `tmp_destination` (`destination_name`, `created_at`) VALUES
 ('Tmp Destination 09', NOW()),
 ('Tmp Destination 10', NOW());
 
--- tmp_vehicle (10 rows)
 INSERT INTO `tmp_vehicle` (`vehicle_name`, `vehicleID`, `created_at`) VALUES
 ('Tmp Vehicle 01', 'TMP-VEH-001', NOW()),
 ('Tmp Vehicle 02', 'TMP-VEH-002', NOW()),
@@ -153,11 +128,6 @@ INSERT INTO `tmp_vehicle` (`vehicle_name`, `vehicleID`, `created_at`) VALUES
 ('Tmp Vehicle 09', 'TMP-VEH-009', NOW()),
 ('Tmp Vehicle 10', 'TMP-VEH-010', NOW());
 
--- ========================================================
--- 4) TMP TRANSACTIONAL (tmp_mLoc, tmp_vtrip)
--- ========================================================
-
--- tmp_mLoc (10 rows)
 INSERT INTO `tmp_mLoc`
 (`people_id`,`destination_id`,`requestBy`,`leaveDate`,`returnDate`,`created_at`)
 SELECT p.id, d.id, x.requestBy, x.leaveDate, x.returnDate, NOW()
@@ -186,7 +156,6 @@ FROM (
 JOIN `people`      AS p ON p.`name` = x.person
 JOIN `destination` AS d ON d.`destination_name` = x.dest;
 
--- tmp_vtrip (10 rows)
 INSERT INTO `tmp_vtrip`
 (`people_id`,`vehicle_id`,`destination_id`,`requestBy`,`leaveDate`,`returnDate`,`created_at`)
 SELECT p.id, v.id, d.id, x.requestBy, x.leaveDate, x.returnDate, NOW()

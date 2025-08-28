@@ -7,6 +7,36 @@ $page = $pageKey ?? ($uri->getSegment(1) ?: 'vtrip');
 $logoMain = $logoMain ?? 'V-Trip';
 $logoSub  = $logoSub  ?? 'WRU';
 ?>
+<!-- Style untuk panah WRU yang responsif -->
+<style>
+  #wruArrow {
+    display: inline-block;
+    font-weight: 700;
+    margin-left: 10px;
+    margin-bottom: 1px;
+    font-size: 1.18em;
+    transition: transform .1s ease;
+  }
+
+  /* State panah: right (default mobile) */
+  #wruArrow.right {
+    transform: rotate(0deg);
+  }
+
+  /* State panah: down (desktop tertutup) */
+  #wruArrow.down {
+    transform: rotate(90deg);
+    margin-left: 8px;
+    margin-bottom: 0;
+  }
+
+  /* State panah: up (semua ukuran saat terbuka) */
+  #wruArrow.up {
+    transform: rotate(-90deg);
+    margin-left: 8px;
+    margin-bottom: 0;
+  }
+</style>
 
 <div class="top-bar">
   <div class="left-side">
@@ -18,7 +48,18 @@ $logoSub  = $logoSub  ?? 'WRU';
       <button class="menu-item<?= $page === 'promag' ? ' active' : '' ?>" type="button" data-href="<?= base_url('promag') ?>">PROMAG</button>
 
       <div class="dropdown">
-        <button class="menu-item<?= in_array($page, ['mloc', 'vtrip']) ? ' active' : '' ?>" type="button" onclick="toggleDropdown(event)">WRU</button>
+        <!-- WRU button dengan panah yang dikelola JavaScript -->
+        <button
+          id="wruButton"
+          class="menu-item<?= in_array($page, ['mloc', 'vtrip']) ? ' active' : '' ?>"
+          type="button"
+          onclick="toggleDropdown(event)"
+          aria-haspopup="true"
+          aria-expanded="false">
+          WRU
+          <span id="wruArrow" class="right" aria-hidden="true">&gt;</span>
+        </button>
+
         <div id="submenu" class="submenu">
           <button class="submenu-item<?= $page === 'mloc' ? ' active' : '' ?>" type="button" data-href="<?= base_url('mloc') ?>">M-Loc</button>
           <button class="submenu-item<?= $page === 'vtrip' ? ' active' : '' ?>" type="button" data-href="<?= base_url('vtrip') ?>">V-Trip</button>

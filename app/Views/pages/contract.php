@@ -1,13 +1,12 @@
 <?php
 // app/Views/contract/index.php
-// Menggunakan layout template + partials yang sudah kamu sediakan
 ?>
 
 <?= $this->extend('layout/template') ?>
 
 <?= $this->section('content') ?>
 
-<!-- Header kolom card -->
+<!-- Header kolom card (selalu tampil di semua ukuran) -->
 <div class="project-header">
     <div class="project-header-institusi">Institusi</div>
     <div class="project-header-proyek">Proyek</div>

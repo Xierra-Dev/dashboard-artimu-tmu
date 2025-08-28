@@ -2,12 +2,13 @@
    CONTRACT — STACKED SLIDES (desktop) + SCROLL-MODE (≤1399px)
 ========================= */
 
-/* Hindari scroll horizontal global */
+/* Hindari scroll horizontal global dan pastikan sumbu-Y bisa scroll */
 html,
 body {
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .content-wrapper {
@@ -198,6 +199,7 @@ body {
   text-overflow: ellipsis;
   word-wrap: break-word;
 }
+
 .card-keterangan {
   font-size: 11px;
   color: #fff;
@@ -278,148 +280,493 @@ body {
 .status.canceled  { background: linear-gradient(to top, rgba(255,3,3,.575), rgba(255,255,255,.025)); }
 
 /* =========================
-   RESPONSIVE: SCROLL-MODE (≤1399px) — single page, vertical scroll
+   RESPONSIVE: SCROLL-MODE (≤1399px) — force single page vertical
+   (elemen carousel disembunyikan)
 ========================= */
-
-/* Tablet & ke bawah: ≤1399px */
-@media (max-width: 1399px) {
+@media screen and (max-width: 1399px) and (min-width: 769px) {
   .content-wrapper {
     width: calc(100vw - 40px);
     inline-size: calc(100dvw - 40px);
-    margin: 15px auto 0;
-    overflow: visible; /* biar body yg scroll */
+    margin: 20px auto 0;
+    padding: 0 10px;
   }
 
-  /* MATIKAN ciri-ciri slider */
-  .card-pages {
-    position: static;
-    height: auto !important;
-    overflow: visible;      /* biarkan mengalir */
-    transition: none;
+  .page { 
+    grid-auto-rows: auto; 
+    row-gap: 24px;
+    margin-bottom: 30px;
   }
-  .page {
-    position: static;
-    transform: none !important;
-    transition: none !important;
-    grid-auto-rows: auto;   /* tinggi kartu natural */
-    row-gap: 10px;
-    margin-bottom: 10px;    /* spasi antar-kartu */
-  }
-
-  /* Sembunyikan elemen carousel */
-  .page-indicators { display: none !important; }
-  .nav-arrow       { display: none !important; }
-  #playPauseBtn    { display: none !important; }
-
-  /* Layout kartu agak padat */
-  .card {
-    grid-template-columns: 1.2fr 1.8fr 0.4fr 1fr 1fr 1fr 1.5fr 0.6fr;
-    padding: 8px 12px;
-    height: auto;            /* natural */
-  }
-
-  .project-header {
-    margin-left: 20px;
-    max-width: 70%;
-    grid-template-columns: 1.2fr 1.8fr 0.4fr 1fr;
-    font-size: 12px;
-  }
-  .project-header-institusi { margin-left: 40px; }
-  .project-header-proyek    { margin-left: 20px; }
-  .project-header-pt        { margin-left: -10px; }
-}
-
-/* ≤1200px: 1 kolom isi, konten ditumpuk */
-@media (max-width: 1200px) {
-  .content-wrapper {
-    width: calc(100vw - 20px);
-    inline-size: calc(100dvw - 20px);
-    margin: 10px auto 0;
-  }
-
-  .page { grid-auto-rows: auto; }
 
   .card {
     grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto auto auto auto auto auto;
-    gap: 8px;
-    padding: 12px;
+    grid-template-rows: repeat(8, auto);
+    gap: 8px; /* UPDATED: rapatkan antar-row di dalam card */
+    padding: 24px 20px;
+    border-radius: 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.25), 0 4px 16px rgba(0,0,0,.15);
+    backdrop-filter: blur(30px);
+    background: rgba(255,255,255,.1);
+    border: 2px solid rgba(255,255,255,.3);
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    opacity: 0.7;
   }
 
-  .card-institusi,
-  .card-proyek,
-  .card-pimpro,
-  .card-keterangan {
+  .card-institusi{
+    font-size: 18px;
+    font-weight: bolder;
+    margin-top: 10px;
+    margin-right: 5px;
+    max-width: 65%;
+    -webkit-line-clamp: 2;
+    border: 1px solid rgba(255,255,255,.3);
+  }
+
+  .card-proyek {
+    font-size: 15px;
+    font-weight: bold;
+    margin-top: 20px;
+    margin-left: 8px;
     max-width: 100%;
+    border: 1px solid rgba(255,255,255,.3);
+    -webkit-line-clamp: 3;
+    
+  }
+
+  .card-pt {
+    margin-top: 7.5px;
+    margin-left: 8px;
+    max-width: 100%;
+    max-height: fit-content;
+    border: 1px solid rgba(255,255,255,.3);
+    -webkit-line-clamp: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-wrap: break-word;
+  }
+
+  .card-pimpro {
+    font-size: 15px;
+    margin-top: 10px;
+    margin-left: 8px;
+    width: 99%;
+    border: 1px solid rgba(255,255,255,.3);
+    overflow: hidden;
+    -webkit-line-clamp: 1;
+    text-overflow: ellipsis;
+    word-wrap: break-word;
+  }
+
+   .card-keterangan{
+    font-size:12px;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    margin-top: 10px;              /* spasi aman di antara date-group */
+    width: 98.5%;
+    line-height: 1.2;
+    text-align: center; /* teks di tengah */
+    justify-self: center;          /* center sebagai item grid */
+    align-self: center;            /* center secara vertikal pada barisnya */
+    border: 1px solid rgba(255,255,255,.3);
+  }
+
+  .date-group-1{
+    display: grid;
+    grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+    gap: 16px 14px;
+    align-items: stretch;
+  }
+
+  .date-group-2 {
+    display: grid;
+    grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+    gap: 16px 14px;
+    align-items: stretch;
+    margin-top: -14px;  /* UPDATED: tarik baris Delivery/Close ke atas */
+  }
+
+  .date-group {
+    display: grid;
+    grid-template-rows: auto auto;
     width: 100%;
-    margin-left: 0;
-    text-align: left;
+    padding: 12px 12px;
+    border-radius: 12px;
+    box-sizing: border-box;
+    margin: 0;          /* UPDATED: buang margin bawaan */
   }
-
-  .pt-badge { width: fit-content; justify-self: start; }
-
-  .date-group-1,
-  .date-group-2 { display: flex; gap: 10px; flex-wrap: wrap; }
-  .date-group { margin: 0; flex: 1; min-width: 120px; }
-
-  .status {
-    position: static;
-    transform: none;
-    height: auto;
-    border-radius: 4px;
-    padding: 6px 12px;
-    justify-self: start;
-    width: fit-content;
-  }
-  .status-value { margin-top: 0; width: auto; max-height: none; }
-
-  .project-header { display: none; }
-
-  .card-institusi::before { content: 'Institusi: '; font-weight: 600; opacity: 0.8; }
-  .card-proyek::before    { content: 'Proyek: ';   font-weight: 600; opacity: 0.8; }
-  .card-pimpro::before    { content: 'Pimpro: ';   font-weight: 600; opacity: 0.8; }
-  .card-keterangan::before{ content: 'Keterangan: '; font-weight: 600; opacity: 0.8; }
-}
-
-/* ≤480px: padding kecil */
-@media (max-width: 480px) {
-  .content-wrapper {
-    width: calc(100vw - 10px);
-    inline-size: calc(100dvw - 10px);
-    margin: 5px auto 0;
-  }
-
-  .page { grid-auto-rows: auto; }
-
-  .card {
-    padding: 10px;
-    gap: 6px;
-    border-radius: 4px;
-    margin-bottom: 10px;
-  }
-
-  .card-institusi,
-  .card-proyek,
-  .card-pimpro,
-  .card-keterangan {
-    font-size: 11px;
-    line-height: 1.3;
-  }
-
-  .pt-badge { font-size: 10px; padding: 4px 8px; }
-
-  .date-group-1, .date-group-2 { flex-direction: column; gap: 6px; }
-  .date-group { min-width: auto; }
 
   .date-title-contract,
   .date-title-dueDate,
   .date-title-delivery,
   .date-title-close {
-    width: 50px;
-    font-size: 10px;
+    width: auto;
+    font-size: clamp(11px, 1.2vw, 13px);
+    margin: 0;
   }
 
-  .date-value { font-size: 10px; width: 80px; padding: 1px 4px; }
+  .date-value {
+    width: 100%;
+    inline-size: 100%;
+    font-size: clamp(11px, 1.25vw, 14px);
+    padding: clamp(6px, .7vw, 10px) clamp(10px, 1.2vw, 14px);
+    border-radius: 12px;
+    text-align: center;
+    box-sizing: border-box;
+  }
 
-  .status { padding: 4px 8px; font-size: 9px; }
+  .pt-badge {
+    width: fit-content;
+    justify-self: start;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    box-shadow: 0 2px 8px rgba(128,0,128,.3);
+  }
+
+  .status {
+    position: relative;
+    transform: none;
+    height: auto;
+    border-radius: 25px;
+    padding: 12px 20px;
+    justify-self: start;
+    width: 25%;
+    max-height: 100px;
+    box-shadow: 0 4px 16px rgba(0,0,0,.2);
+    font-size: 11px;
+    margin-top: 20px;
+    margin-right: 10px;
+    -webkit-line-clamp: 2;
+    border: 1px solid rgba(255,255,255,.3);
+  }
+  .status-value { 
+    margin-top: 0; 
+    width: auto; 
+    max-height: none; 
+    border: 1px solid rgba(255,255,255,.3);
+  }
+
+  .project-header { display: none; }
+}
+
+/* =========================
+   ≤768px
+========================= */
+@media (max-width: 768px) {
+  .content-wrapper {
+    width: calc(100vw - 40px);
+    inline-size: calc(100dvw - 40px);
+    margin: 20px auto 0;
+    padding: 0 10px;
+  }
+
+  .page { 
+    grid-auto-rows: auto; 
+    row-gap: 24px;
+    margin-bottom: 30px;
+  }
+
+  .card {
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(8, auto);
+    gap: 10px;  /* UPDATED */
+    padding: 24px 20px;
+    border-radius: 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.25), 0 4px 16px rgba(0,0,0,.15);
+    backdrop-filter: blur(30px);
+    border: 2px solid rgba(255,255,255,.3);
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    opacity: 0.7;
+  }
+
+  .status {
+    margin-left: 7px;
+  }
+
+  .card-institusi{
+    font-size: 15px;
+    font-weight: bolder;
+    margin-top: 20px;
+    margin-left: 8px;
+    max-width: 100%;
+    -webkit-line-clamp: 2;
+  }
+
+  .card-proyek {
+    font-size: 11px;
+    font-weight: bold;
+    margin-left: 8px;
+    max-width: 100%;
+    border: 1px solid rgba(255,255,255,.3);
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-wrap: break-word;
+  }
+
+  .card-pt {
+    margin-top: 7.5px;
+    margin-left: 8px;
+    max-width: 100%;
+    max-height: fit-content;
+    border: 1px solid rgba(255,255,255,.3);
+    -webkit-line-clamp: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-wrap: break-word;
+  }
+
+  .card-pimpro {
+    font-size: 11px;
+    margin-top: 10px;
+    margin-left: 8px;
+    width: 98.5%;
+    border: 1px solid rgba(255,255,255,.3);
+    overflow: hidden;
+    -webkit-line-clamp: 2;
+    text-overflow: ellipsis;
+    word-wrap: break-word;
+  }
+
+   .card-keterangan{
+    font-size: 9px;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    margin-top: 10px;              /* spasi aman di antara date-group */
+    width: 100%;
+    line-height: 1.2;
+    text-align: center; /* teks di tengah */
+    justify-self: center;          /* center sebagai item grid */
+    align-self: center;            /* center secara vertikal pada barisnya */
+    border: 1px solid rgba(255,255,255,.3);
+  }
+
+  .date-group-1,
+  .date-group-2 {
+    display: grid;
+    grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+    gap: 16px 18px;
+    align-items: stretch;
+  }
+  .date-group-2 { margin-top: -12px; } /* UPDATED */
+
+  .date-group {
+    display: grid;
+    grid-template-rows: auto auto;
+    gap: 10px;
+    width: 100%;
+    min-width: 0;
+    padding: 12px 12px;
+    border-radius: 12px;
+    box-sizing: border-box;
+    margin: 0;             /* UPDATED */
+  }
+
+  .date-title-contract,
+  .date-title-dueDate,
+  .date-title-delivery,
+  .date-title-close {
+    width: auto;
+    font-size: clamp(11px, 1.2vw, 13px);
+    margin: 0;
+  }
+
+  .date-value {
+    width: 100%;
+    inline-size: 100%;
+    min-width: 0;
+    max-width: 100%;
+    font-size: clamp(11px, 1.25vw, 14px);
+    padding: clamp(6px, .7vw, 10px) clamp(10px, 1.2vw, 14px);
+    border-radius: 12px;
+    text-align: center;
+    box-sizing: border-box;
+  }
+
+  .pt-badge {
+    width: fit-content;
+    justify-self: start;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    box-shadow: 0 2px 8px rgba(128,0,128,.3);
+  }
+
+  .status {
+    position: static;
+    transform: none;
+    height: auto;
+    border-radius: 25px;
+    padding: 12px 20px;
+    justify-self: start;
+    width: fit-content;
+    box-shadow: 0 4px 16px rgba(0,0,0,.2);
+    font-size: 11px;
+    margin-top: 8px;
+  }
+  .status-value { margin-top: 0; width: auto; max-height: none; }
+
+  .project-header { display: none; }
+}
+
+/* =========================
+   ≤480px (kompak)
+========================= */
+@media (max-width: 480px) {
+  .content-wrapper {
+    width: calc(100vw - 20px);
+    inline-size: calc(100dvw - 20px);
+    margin: 15px auto 0;
+    padding: 0 5px;
+  }
+
+  .page { 
+    grid-auto-rows: auto; 
+    row-gap: 20px;
+    margin-bottom: 25px;
+  }
+
+  .card {
+    padding: 20px 16px;
+    gap: 8px;  /* UPDATED */
+    border-radius: 14px;
+    margin-bottom: 16px;
+    box-shadow: 0 6px 24px rgba(0,0,0,.2), 0 2px 12px rgba(0,0,0,.1);
+    backdrop-filter: blur(20px);
+    background: rgba(255,255,255,.08);
+    border: 1.5px solid rgba(255,255,255,.25);
+  }
+  .card::before { height: 2px; }
+
+  .pt-badge { font-size: 11px; padding: 6px 12px; border-radius: 16px; }
+
+  .date-group-1,
+  .date-group-2 {
+    display: grid;
+    grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+    gap: 14px 12px;
+  }
+  .date-group-2 { margin-top: -10px; } /* UPDATED */
+
+  .date-group {
+    display: grid;
+    grid-template-rows: auto auto;
+    gap: 6px;
+    width: 100%;
+    min-width: 0;
+    padding: 10px;
+    border-radius: 10px;
+    box-sizing: border-box;
+    margin: 0;           /* UPDATED */
+  }
+
+  .date-title-contract,
+  .date-title-dueDate,
+  .date-title-delivery,
+  .date-title-close {
+    width: auto;
+    font-size: clamp(9px, 2.6vw, 11px);
+  }
+
+  .date-value {
+    width: 100%;
+    inline-size: 100%;
+    min-width: 0;
+    max-width: 100%;
+    font-size: clamp(10px, 2.8vw, 12px);
+    padding: clamp(5px, 1.8vw, 8px) clamp(8px, 2.2vw, 12px);
+    border-radius: 10px;
+    text-align: center;
+    box-sizing: border-box;
+  }
+
+  .status { font-size: 10px; padding: 10px 16px; border-radius: 20px; margin-top: 6px; }
+}
+
+/* ======= FORCE SCROLL MODE dari JS (kelas pada <html>) ======= */
+.contract-scroll-mode,
+.contract-scroll-mode body {
+  height: auto;
+  min-height: 100%;
+  overflow-y: auto;
+}
+.contract-scroll-mode .content-wrapper {
+  overflow: visible !important;
+  height: auto !important;
+}
+.contract-scroll-mode .card-pages {
+  position: static !important;
+  height: auto !important;         /* override height inline dari desktop */
+  overflow: visible !important;
+  transition: none !important;
+}
+.contract-scroll-mode .page {
+  position: static !important;
+  transform: none !important;
+  transition: none !important;
+  grid-auto-rows: auto !important;
+}
+.contract-scroll-mode .page-indicators,
+.contract-scroll-mode .nav-arrow,
+.contract-scroll-mode #playPauseBtn {
+  display: none !important;
+}
+
+/* =========================
+   🔧 PATCH SPESIFIK: TABLET 769–1399px
+   - Status di kanan-atas (absolute) TANPA mendorong konten
+   - Konten kiri sedikit digeser ke kanan
+   - .date-group TIDAK diubah, screen lain TIDAK diubah
+========================= */
+@media (min-width: 769px) and (max-width: 1399px) {
+
+  /* geser isi card ke kanan + beri ruang kanan agar tidak ketabrak status */
+  .card {
+    padding-left: 56px !important;
+    padding-right: 56px !important;
+  }
+
+  /* status di kanan-atas, keluar dari flow */
+  .card .status {
+    position: absolute !important;
+    top: 15px !important;
+    right: 35px !important;
+    transform: none !important;
+    height: auto !important;
+    padding: 10px 18px !important;
+    border-radius: 24px !important;
+    z-index: 10;
+    box-shadow: 0 4px 16px rgba(0,0,0,.2);
+  }
+
+  .card .status-value {
+    margin: 0 !important;
+    width: auto !important;
+    max-width: 260px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    -webkit-line-clamp: initial !important;
+    -webkit-box-orient: initial !important;
+  }
+
+  /* geser sedikit konten kiri; BUKAN .date-group */
+  .card .card-institusi,
+  .card .card-proyek,
+  .card .card-pt,
+  .card .card-pimpro,
+  .card .card-keterangan {
+    margin-left: 12px;
+  }
 }

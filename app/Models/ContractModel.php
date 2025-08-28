@@ -14,7 +14,7 @@ class ContractModel extends Model
     {
         return [
             [
-                'institusi'    => 'Dinas Pendidikan Sulawesi Selatan aoiudwjhaoiwdj aiwodjoiwjda',
+                'institusi'    => 'Dinas Pendidikan Sulawesi Selatan Dinas Pendidikan Sulawesi Selatan Dinas Pendidikan Sulawesi Selatan',
                 'proyek'       => 'PENGADAAN PERMESINAN PENGGERAK POKOK UNTUK KAPAL NELAYAN SGDWIADG WIDGAISGDAW AOUIWDHAOIUWDH AOIDH AWOI AIUHDAIU AWUDOHADUIW',
                 'pt'           => 'TMU',
                 'pimpro'       => 'Muhammad Fajri Ramdhani wauidhasiduahdiuahd awiudhsaiuahdiuw',

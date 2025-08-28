@@ -3,7 +3,12 @@
 // dipanggil dari atribut onclick di navbar.php
 window.toggleDropdown = function (e) {
   e.stopPropagation();
-  document.getElementById("submenu")?.classList.toggle("show");
+  const submenu = document.getElementById("submenu");
+  submenu?.classList.toggle("show");
+  // update aria & panah setiap toggle
+  const wruBtn = document.getElementById("wruButton");
+  if (wruBtn) wruBtn.setAttribute("aria-expanded", submenu?.classList.contains("show") ? "true" : "false");
+  if (typeof window.updateWruArrow === "function") window.updateWruArrow();
 };
 
 // tutup submenu kalau klik di luar
@@ -11,6 +16,9 @@ document.addEventListener("click", function (e) {
   const dropdown = document.querySelector(".dropdown");
   if (dropdown && !dropdown.contains(e.target)) {
     document.getElementById("submenu")?.classList.remove("show");
+    const wruBtn = document.getElementById("wruButton");
+    if (wruBtn) wruBtn.setAttribute("aria-expanded", "false");
+    if (typeof window.updateWruArrow === "function") window.updateWruArrow();
   }
 });
 
@@ -57,6 +65,48 @@ document.addEventListener("DOMContentLoaded", function () {
       (menuButton && menuButton.contains(e.target)) ||
       (menuDropdown && menuDropdown.contains(e.target));
     if (!isClickInsideMenu) menuDropdown?.classList.remove("active");
+  });
+
+  // ======= PANAH WRU (responsif; rotate karakter '>') =======
+  // Mobile: selalu right (→) baik terbuka/tertutup
+  // Desktop tertutup: down (▼ via rotate 90°)  
+  // Desktop terbuka: up (▲ via rotate -90°)
+  window.updateWruArrow = function () {
+    const arrow   = document.getElementById("wruArrow");
+    const submenu = document.getElementById("submenu");
+    const wruBtn  = document.getElementById("wruButton");
+    if (!arrow || !submenu || !wruBtn) return;
+
+    const isOpen = submenu.classList.contains("show");
+    const wide   = window.innerWidth >= 1400;
+
+    arrow.classList.remove("right","down","up");
+    
+    if (wide) {
+      // Desktop (≥1400px): down saat tertutup, up saat terbuka
+      if (isOpen) {
+        arrow.classList.add("up");                 // desktop terbuka → ↑
+      } else {
+        arrow.classList.add("down");               // desktop tertutup → ↓
+      }
+    } else {
+      // Mobile (<1400px): selalu right, tidak berubah
+      arrow.classList.add("right");                // mobile selalu → (baik terbuka/tertutup)
+    }
+    
+    wruBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+  };
+
+  // Inisialisasi pertama
+  window.updateWruArrow();
+
+  // Perbarui saat resize
+  let wruArrowResizeTimeout;
+  window.addEventListener("resize", function () {
+    clearTimeout(wruArrowResizeTimeout);
+    wruArrowResizeTimeout = setTimeout(() => {
+      window.updateWruArrow();
+    }, 120);
   });
 
   // ===== Single Page Carousel Control =====
@@ -151,6 +201,10 @@ document.addEventListener("DOMContentLoaded", function() {
         if (mutation.type === 'childList') {
           if (typeof window.handleSinglePageCarousel === 'function') {
             setTimeout(window.handleSinglePageCarousel, 50);
+          }
+          // sinkronkan panah WRU juga
+          if (typeof window.updateWruArrow === 'function') {
+            setTimeout(window.updateWruArrow, 50);
           }
         }
       });
