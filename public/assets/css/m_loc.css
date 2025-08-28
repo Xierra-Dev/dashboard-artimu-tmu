@@ -1,0 +1,747 @@
+/* ===== Reset & Base ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  font-family: sans-serif;
+  padding: 0;
+  overflow: hidden; /* Desktop: tidak ada scroll */
+}
+
+/* Background video */
+video {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  z-index: -1;
+}
+
+/* ===== Main Container (seperti Samsung) ===== */
+.main-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 20px;
+  position: relative;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Desktop: kontrol overflow */
+}
+
+/* ===== Content Wrapper dengan batasan lebar dan overflow tersembunyi ===== */
+.content-wrapper {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  width: calc(100% - 90px);
+  max-height: auto;
+  margin: 0 auto;
+  overflow: hidden; /* Desktop: sembunyikan overflow */
+  position: relative;
+  z-index: 1;
+  border: 1px solid #8bb929; /* debug border, opsional */
+}
+
+.card-pages {
+  display: flex;
+  transition: transform 0.5s ease;
+  width: 100%;
+  height: 750px;            /* DEFAULT/FALLBACK untuk non-desktop */
+  position: relative;
+}
+
+.page {
+  min-width: 100%;
+  flex-shrink: 0;
+  display: grid;
+  row-gap: 15px;
+  column-gap: 15px;
+  grid-template-columns: repeat(2, 1fr);
+  padding: 15px 0;
+  box-sizing: border-box;
+  grid-auto-rows: minmax(105px, auto);
+  justify-content: center;
+  justify-items: stretch;
+  align-items: start;
+  overflow: hidden;
+  align-content: start;
+  grid-auto-rows: 110px;
+}
+
+/* ===== Card Container untuk kontrol ukuran ===== */
+.card-container {
+  width: 100%;
+  min-width: 500px;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* ===== Card dengan ukuran responsif ===== */
+.card {
+  width: 100%;
+  height: 110px;
+  backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 5px;
+  padding: 16px;
+  font-size: 14px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgb(211, 138, 1);
+}
+
+.card:nth-child(4n + 1),
+.card:nth-child(4n + 4) {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: black;
+}
+
+.card:nth-child(4n + 2),
+.card:nth-child(4n + 3) {
+  background-color: rgba(0, 0, 0, 0.2);
+  color: white;
+}
+
+.card-left {
+  flex: 0 0 200px;
+  max-width: 200px;
+  height: 80px;
+  font-weight: bold;
+  color: white;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  border-right: 3px solid rgba(255, 255, 255, 0.86);
+  padding-right: 15px;
+  margin-right: 15px;
+  overflow: hidden;
+}
+
+.card-middle {
+  flex: 1;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.card-right {
+  flex: 0 0 140px;
+  max-width: 140px;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+  overflow: hidden;
+}
+
+.location {
+  font-size: 15px;
+  font-weight: bold;
+
+  /* --- penting untuk clamp 2 baris --- */
+  line-height: 1.25; /* tinggi tiap baris */
+  max-height: calc(1.25em * 2); /* tinggi maks = 2 baris */
+  display: -webkit-box; /* engine clamp */
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2; /* webkit */
+  line-clamp: 2; /* spec baru */
+
+  white-space: normal; /* boleh multi-baris */
+  overflow: hidden; /* sembunyikan sisa */
+  text-overflow: ellipsis; /* pakai "..." */
+  overflow-wrap: anywhere; /* antisipasi kata sangat panjang */
+}
+
+.request {
+  font-size: 13px;
+  color: #ffbb00;
+  white-space: nowrap;
+  margin-top: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.request span {
+  background-color: orange;
+  color: black;
+  padding: 2px 6px;
+  border-radius: 8px;
+  font-weight: bold;
+  font-style: italic;
+  white-space: nowrap;
+}
+
+.dates {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.date-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 11px;
+  font-weight: bold;
+  min-width: 0;
+}
+
+.date-label.leave {
+  color: #c0392b;
+}
+
+.date-label.return {
+  color: #27ae60;
+}
+
+.date-label span {
+  margin-top: 2px;
+  padding: 4px 8px;
+  border-radius: 10px;
+  color: white;
+  white-space: nowrap;
+  font-size: 10px;
+}
+
+.leave span {
+  background-color: #c0392b;
+}
+
+.return span {
+  background-color: #27ae60;
+}
+
+/* ===== Page indicators ===== */
+.page-indicators {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 12px;
+  z-index: 30;
+}
+
+.indicator-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.indicator-dot.active {
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  transform: scale(1.2);
+}
+
+.indicator-dot:hover {
+  background: rgba(255, 255, 255, 0.7);
+  transform: scale(1.1);
+}
+
+/* ===== Desktop (≥1400px): ikut tinggi wrapper ===== */
+@media (min-width: 1400px) {
+  .content-wrapper {
+    max-width: calc(100% - 90px);
+    max-height: calc(100vh - 52px);
+  }
+
+  .page {
+    display: flex;
+    justify-content: flex-start; /* mulai dari kiri */
+    align-items: flex-start;     /* mulai dari atas */
+    padding: 15px 0;
+    height: 100%;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .page-inner {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    column-gap: 15px;
+    row-gap: 15px;
+    width: 100%;
+    align-content: start;
+    justify-items: stretch;
+    /* NEW: baris grid fix agar tidak berubah-ubah saat zoom/teks panjang */
+    grid-auto-rows: 110px;
+  }
+
+  .card-pages {
+    height: 100%;
+    align-content: center !important;
+  }
+
+  .card-left { flex: 0 0 180px; max-width: 180px; }
+  .card-right { flex: 0 0 120px; max-width: 120px; }
+}
+
+
+/* ===== Tablet landscape - (max-width:1399px) & (min-width:769px) ===== */
+@media screen and (max-width: 1399px) and (min-width: 769px) {
+  /* Aktifkan scroll vertikal untuk body */
+  html,
+  body {
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .main-container {
+    height: auto;
+    min-height: 100vh;
+    overflow-x: hidden;
+    padding: 0 15px;
+    max-width: 100vw;
+    box-sizing: border-box;
+  }
+
+  .left-hover-area,
+  .right-hover-area {
+    display: none;
+  }
+
+  .page-indicators {
+    display: none;
+  }
+
+  .content-wrapper {
+    height: auto;
+    max-height: none;
+    max-width: 100%;
+    width: 100%;
+    overflow-x: hidden;
+    padding-bottom: 40px;
+    margin-top: 20px;
+    box-sizing: border-box;
+    
+  }
+
+  .card-pages {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    position: static;
+    transform: none;
+    transition: none;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+
+  .page {
+    min-width: auto;
+    width: 100%;
+    max-width: 100%;
+    display: block;
+    height: auto;
+    padding: 0;
+    margin-bottom: 0;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+
+  .page-inner {
+    display: block;
+    width: 100%;
+  }
+
+  .card-container {
+    width: 100%;
+    max-width: 100%;
+    min-width: auto;
+    margin-bottom: 15px;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    min-height: 120px;
+    flex-direction: column;
+    gap: 12px;
+    padding: 15px;
+    margin-bottom: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+    margin-left: 35px;
+    margin-right: 35px;
+  }
+
+  .card-left {
+    flex: none;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    border-right: none;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.86);
+    padding-right: 0;
+    padding-bottom: 10px;
+    margin-right: 0;
+    margin-bottom: 10px;
+    text-align: center;
+    font-size: 16px;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .card-middle,
+  .card-right {
+    flex: none;
+    width: 100%;
+    max-width: 100%;
+    align-items: center;
+    text-align: center;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .dates {
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .date-label {
+    flex: 1;
+    width: 48%;
+  }
+
+  .date-label span {
+    width: 100%;
+    min-width: auto;
+    padding: 6px 4px;
+    font-size: 10px;
+    text-align: center;
+    display: block;
+  }
+
+  .location {
+    font-size: 16px;
+    line-height: 1.25;
+    max-height: calc(1.25em * 2);
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    white-space: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    overflow-wrap: anywhere;
+  }
+
+  .request {
+    font-size: 14px;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+  }
+
+  #playPauseBtn {
+    display: none !important;
+  }
+}
+
+/* ===== MOBILE RESPONSIF: 768px kebawah ===== */
+@media (max-width: 768px) {
+  html,
+  body {
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .main-container {
+    height: auto;
+    min-height: 100vh;
+    overflow-x: hidden;
+    padding: 0 15px;
+    max-width: 100vw;
+    box-sizing: border-box;
+  }
+
+  .left-hover-area,
+  .right-hover-area {
+    display: none;
+  }
+
+  .page-indicators {
+    display: none;
+  }
+
+  .content-wrapper {
+    height: auto;
+    max-height: none;
+    max-width: 100%;
+    width: 100%;
+    overflow-x: hidden;
+    padding-bottom: 40px;
+    margin-top: 20px;
+    box-sizing: border-box;
+  }
+
+  .card-pages {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    position: static;
+    transform: none;
+    transition: none;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+
+  .page {
+    min-width: auto;
+    width: 100%;
+    max-width: 100%;
+    display: block;
+    height: auto;
+    padding: 0;
+    margin-bottom: 0;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+
+  .card-container {
+    width: 100%;
+    max-width: 100%;
+    min-width: auto;
+    margin-bottom: 15px;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    min-height: 120px;
+    flex-direction: column;
+    gap: 12px;
+    padding: 15px;
+    margin-bottom: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+    margin-left: 20px;
+    margin-right: 20px;
+  }
+
+  .card-left {
+    flex: none;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    border-right: none;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.86);
+    padding-right: 0;
+    padding-bottom: 10px;
+    margin-right: 0;
+    margin-bottom: 10px;
+    text-align: center;
+    font-size: 16px;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .card-middle,
+  .card-right {
+    flex: none;
+    width: 100%;
+    max-width: 100%;
+    align-items: center;
+    text-align: center;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .dates {
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .date-label {
+    flex: 1;
+    width: 48%;
+  }
+
+  .date-label span {
+    width: 100%;
+    min-width: auto;
+    padding: 6px 4px;
+    font-size: 10px;
+    text-align: center;
+    display: block;
+  }
+
+  .location {
+    font-size: 16px;
+    line-height: 1.25;
+    max-height: calc(1.25em * 2);
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    white-space: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    overflow-wrap: anywhere;
+  }
+
+  .request {
+    font-size: 14px;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+  }
+
+  #playPauseBtn {
+    display: none !important;
+  }
+}
+
+/* ===== MOBILE KECIL: 480px kebawah ===== */
+@media (max-width: 480px) {
+  .main-container {
+    padding: 0 10px;
+    max-width: 100vw;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+
+  .content-wrapper {
+    margin-top: 10px;
+    padding-bottom: 30px;
+    width: 100%;
+    max-width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+
+  .card-pages {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+
+  .page {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+
+  .card-container {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 100%;
+    padding: 12px;
+    min-height: 110px;
+    gap: 10px;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .card-left {
+    width: 100%;
+    max-width: 100%;
+    font-size: 14px;
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .location {
+    font-size: 14px;
+    line-height: 1.25;
+    max-height: calc(1.25em * 2);
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    white-space: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    overflow-wrap: anywhere;
+  }
+
+  .request {
+    font-size: 12px;
+  }
+
+  .date-label {
+    font-size: 10px;
+  }
+
+  .date-label span {
+    font-size: 9px;
+    padding: 3px 6px;
+  }
+
+  .dates {
+    gap: 6px;
+  }
+
+  .date-label {
+    flex: 1;
+    width: 48%;
+  }
+
+  .date-label span {
+    width: 100%;
+    font-size: 9px;
+    padding: 4px 2px;
+    text-align: center;
+    display: block;
+  }
+
+  #playPauseBtn {
+    display: none !important;
+  }
+}
