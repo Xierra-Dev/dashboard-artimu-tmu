@@ -51,7 +51,16 @@ class ComposerStaticInit657ac079313fab046eb8c29fe1d6992b
 
     public static $classMap = array (
         'App\\Controllers\\BaseController' => __DIR__ . '/../..' . '/app/Controllers/BaseController.php',
+        'App\\Controllers\\Contract' => __DIR__ . '/../..' . '/app/Controllers/Contract.php',
+        'App\\Controllers\\Dashboard' => __DIR__ . '/../..' . '/app/Controllers/Dashboard.php',
         'App\\Controllers\\Home' => __DIR__ . '/../..' . '/app/Controllers/Home.php',
+        'App\\Controllers\\MLoc' => __DIR__ . '/../..' . '/app/Controllers/MLoc.php',
+        'App\\Controllers\\Promag' => __DIR__ . '/../..' . '/app/Controllers/Promag.php',
+        'App\\Controllers\\VTrip' => __DIR__ . '/../..' . '/app/Controllers/VTrip.php',
+        'App\\Models\\ContractModel' => __DIR__ . '/../..' . '/app/Models/ContractModel.php',
+        'App\\Models\\MLocModel' => __DIR__ . '/../..' . '/app/Models/MLocModel.php',
+        'App\\Models\\PromagModel' => __DIR__ . '/../..' . '/app/Models/PromagModel.php',
+        'App\\Models\\VTripModel' => __DIR__ . '/../..' . '/app/Models/VTripModel.php',
         'CodeIgniter\\API\\ResponseTrait' => __DIR__ . '/..' . '/codeigniter4/framework/system/API/ResponseTrait.php',
         'CodeIgniter\\Autoloader\\Autoloader' => __DIR__ . '/..' . '/codeigniter4/framework/system/Autoloader/Autoloader.php',
         'CodeIgniter\\Autoloader\\FileLocator' => __DIR__ . '/..' . '/codeigniter4/framework/system/Autoloader/FileLocator.php',

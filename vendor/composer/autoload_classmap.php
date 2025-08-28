@@ -7,7 +7,16 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'App\\Controllers\\BaseController' => $baseDir . '/app/Controllers/BaseController.php',
+    'App\\Controllers\\Contract' => $baseDir . '/app/Controllers/Contract.php',
+    'App\\Controllers\\Dashboard' => $baseDir . '/app/Controllers/Dashboard.php',
     'App\\Controllers\\Home' => $baseDir . '/app/Controllers/Home.php',
+    'App\\Controllers\\MLoc' => $baseDir . '/app/Controllers/MLoc.php',
+    'App\\Controllers\\Promag' => $baseDir . '/app/Controllers/Promag.php',
+    'App\\Controllers\\VTrip' => $baseDir . '/app/Controllers/VTrip.php',
+    'App\\Models\\ContractModel' => $baseDir . '/app/Models/ContractModel.php',
+    'App\\Models\\MLocModel' => $baseDir . '/app/Models/MLocModel.php',
+    'App\\Models\\PromagModel' => $baseDir . '/app/Models/PromagModel.php',
+    'App\\Models\\VTripModel' => $baseDir . '/app/Models/VTripModel.php',
     'CodeIgniter\\API\\ResponseTrait' => $vendorDir . '/codeigniter4/framework/system/API/ResponseTrait.php',
     'CodeIgniter\\Autoloader\\Autoloader' => $vendorDir . '/codeigniter4/framework/system/Autoloader/Autoloader.php',
     'CodeIgniter\\Autoloader\\FileLocator' => $vendorDir . '/codeigniter4/framework/system/Autoloader/FileLocator.php',
