@@ -83,7 +83,7 @@ html, body {
 /* Page Indicators */
 .page-indicators {
   position: fixed;
-  bottom: 15px; 
+  bottom: 17px; 
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -266,6 +266,20 @@ html, body {
     box-sizing: border-box; line-height: 1.1; overflow: hidden; word-wrap: break-word;
     -webkit-line-clamp: 2; -webkit-box-orient: unset;
   }
+
+  .card{
+  /* ...rule lain tetap... */
+    column-gap: 14px;   /* <— tambah gutter horizontal antar kolom */
+  }
+
+/* Geser visual badge PT sedikit ke kiri & beri ruang di kanan */
+  .card-pt{
+    padding-right: calc(100% - 500px);   /* <— menambah jarak ke kolom PIMPRO */
+  }
+
+  .pt-badge{
+    margin-right: 4px;     /* <— sedikit ruang setelah badge */
+  }
 }
 .status.completed { background: linear-gradient(to top, rgba(3,255,45,.575), rgba(255,255,255,.025)); }
 .status.countdown { background: linear-gradient(to top, rgba(3,175,255,.575), rgba(255,255,255,.025)); }
@@ -298,10 +312,7 @@ html, body {
 
 /* Geser visual badge PT sedikit ke kiri & beri ruang di kanan */
 .card-pt{
-  padding-right: 60px;   /* <— menambah jarak ke kolom PIMPRO */
-}
-.pt-badge{
-  margin-right: 4px;     /* <— sedikit ruang setelah badge */
+  padding-right: 50px;   /* <— menambah jarak ke kolom PIMPRO */
 }
 
 /* (opsional) header kolom biar selaras dengan body card */

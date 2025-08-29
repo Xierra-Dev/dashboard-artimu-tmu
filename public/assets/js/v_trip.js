@@ -348,13 +348,16 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!insideMenu && isAutoSlideAllowed()) toggleAutoSlide();
   });
 
-  leftArrow?.addEventListener("click", function (e) {
+  leftArrow?.addEventListener("click", (e) => {
     e.stopPropagation();
     stopAutoSlide();
-    if (currentPage > 0) showPage(currentPage - 1);
-    else if (typeof window.goToNextNav === "function") window.goToNextNav();
-    else showPage(0);
-    if (isAutoSliding && window.innerWidth >= 1400) startAutoSlide();
+    if (currentPage > 0) {
+      showPage(currentPage - 1);
+    } else {
+      if (typeof window.goToPrevNav === "function") window.goToPrevNav();
+      else showPage(totalPages - 1);
+    }
+    if (isAutoSliding && isAutoSlideAllowed()) startAutoSlide();
   });
 
   rightArrow?.addEventListener("click", function (e) {
