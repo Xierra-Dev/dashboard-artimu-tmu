@@ -77,7 +77,6 @@ body {
     height: calc(var(--content-h) + var(--top-gap));
 
   /* debug opsional */
-  border: 1px solid rgb(255, 0, 0);
 }
 
 /* Container slider */
@@ -88,10 +87,6 @@ body {
   transition: transform 0.5s ease;
   will-change: transform;
   flex-shrink: 0;
-  border: 1px solid rgb(255, 174, 0);
-
-  /* debug opsional */
-  /* border: 1px solid rgb(0, 223, 37); */
 }
 
 /* Grid per halaman — fallback (dipakai sebelum JS aktif) */
