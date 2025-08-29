@@ -8,7 +8,13 @@ document.addEventListener("DOMContentLoaded", function () {
   // Default 5 kartu tampil di desktop
   const MIN_CARDS_PER_PAGE_DESKTOP = 5;
   const SLIDE_INTERVAL = 10000;
-  const DOT_BOTTOM_GAP = 30;
+          // (lama) dipakai untuk jarak aman indikator
+  const getDotBottomGap = () => {             // CHANGED: jadikan dinamis per breakpoint
+    const w = window.innerWidth;
+    if (w >= 1600) return 50;                 // layar lebar: jarak sedikit lebih besar
+    if (w >= 1400) return 40;                 // 1400–1599px: jarak sedang
+    return 24;                                // default (tak berpengaruh di scroll-mode)
+  };
 
   // Tinggi baris desktop lebih kompak
   const BASE_ROW_H_DESKTOP = 96;   // ↓ dari 104/120
@@ -61,7 +67,8 @@ document.addEventListener("DOMContentLoaded", function () {
       const r = pageIndicatorsContainer.getBoundingClientRect();
       indH = r.height || 0;
     }
-    return Math.max(0, vpH - top - indH - DOT_BOTTOM_GAP);
+    // return Math.max(0, vpH - top - indH - DOT_BOTTOM_GAP); // lama
+    return Math.max(0, vpH - top - indH - getDotBottomGap()); // CHANGED
   }
 
   function computeDynamicRows() {
