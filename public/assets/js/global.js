@@ -117,24 +117,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const playPauseBtn = document.getElementById("playPauseBtn");
     const cardPages = document.getElementById("cardPages");
     const totalPages = pageIndicators?.children.length || 0;
-
-    if (totalPages <= 1) {
-      if (pageIndicators) pageIndicators.style.display = 'none';
-      if (leftArrow) leftArrow.style.display = 'none';
-      if (rightArrow) rightArrow.style.display = 'none';
-      if (playPauseBtn) playPauseBtn.style.display = 'none';
-      if (cardPages) {
-        cardPages.style.transform = 'none';
-        cardPages.classList.add('single-page');
-      }
-      if (window.stopAutoSlide) window.stopAutoSlide();
-    } else {
-      if (pageIndicators) pageIndicators.style.display = '';
-      if (leftArrow) leftArrow.style.display = '';
-      if (rightArrow) rightArrow.style.display = '';
-      if (playPauseBtn) playPauseBtn.style.display = '';
-      if (cardPages) cardPages.classList.remove('single-page');
-    }
   };
 
   setTimeout(() => {
