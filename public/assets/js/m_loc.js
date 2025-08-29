@@ -13,9 +13,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const MIN_PER_PAGE = 10;
   const EPSILON_PX   = 1;
 
-  // [NEW] Tambah 10px ruang ekstra supaya border/radius terlihat
-  const EXTRA_HEIGHT_BUFFER = 10;
-
   // ===== Elemen UI
   const playPauseButton         = document.getElementById("playPauseBtn");
   const menuButton              = document.getElementById("menuToggle");
@@ -124,13 +121,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const { rowGap, cardH, paddings, borders } = measureLayout();
     const minInnerForRows = (cardH * MIN_ROWS) + rowGap * (MIN_ROWS - 1);
     const minOuterForRows = Math.ceil(minInnerForRows + paddings + borders);
-
-    // [NEW] tambahkan buffer 10px agar tinggi final sedikit lebih longgar
-    const baseMax  = Math.max(Math.max(target, 200), minOuterForRows);
-    const finalMax = baseMax + EXTRA_HEIGHT_BUFFER;
+    const finalMax        = Math.max(Math.max(target, 200), minOuterForRows);
 
     contentWrapper.style.maxHeight = finalMax + "px";
-
     const inner = Math.max(0, finalMax - paddings - borders);
     cardPagesContainer.style.height = inner + "px";
   }
