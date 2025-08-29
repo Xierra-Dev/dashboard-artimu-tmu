@@ -1,5 +1,8 @@
+// v_trip.js — perbaikan hitung kartu saat first load & zoom 80%
 document.addEventListener("DOMContentLoaded", function () {
   const projects = (window.PROJECTS || []).slice();
+
+  // ===== Konstanta =====
   const SLIDE_INTERVAL = 10000;
 
   const HEIGHT_RULE_MIN = 1400;
@@ -8,6 +11,10 @@ document.addEventListener("DOMContentLoaded", function () {
   const ROW_GAP_PX = 15;
   const BASE_DESKTOP = 4;
   const BASE_FULLSCREEN = 5;
+
+  // Baru: sisihkan ruang indikator & margin aman anti-pembulatan
+  const INDICATOR_RESERVED_PX = 44; // tinggi dot + padding bawah (konstan, tidak tergantung DOM)
+  const SAFE_MARGIN_PX = 4;         // agar “sisa 1-4px” tidak dihitung 1 kartu penuh
 
   const playPauseButton = document.getElementById("playPauseBtn");
   const menuButton = document.getElementById("menuToggle");
@@ -23,6 +30,10 @@ document.addEventListener("DOMContentLoaded", function () {
   const pageIndicatorsContainer = document.getElementById("pageIndicators");
   const leftArrow = document.getElementById("leftArrow");
   const rightArrow = document.getElementById("rightArrow");
+
+  // tracking untuk second-pass
+  let lastUsedCPP = 0;
+  let secondPassScheduled = false;
 
   const isDesktopWidth = () => window.innerWidth >= 1400;
   const isAutoSlideAllowed = () => window.innerWidth >= 1400;
@@ -43,12 +54,17 @@ document.addEventListener("DOMContentLoaded", function () {
     return maxH;
   }
 
+  // Baru: tidak lagi memakai top indikator aktual (yang bisa 0 saat awal).
   function getAvailableHeightPx() {
-    if (!contentWrapper || !pageIndicatorsContainer || !isDesktopWidth()) return 0;
-    const indRect = pageIndicatorsContainer.getBoundingClientRect();
-    const cwRect  = contentWrapper.getBoundingClientRect();
-    let target = Math.floor(indRect.top - INDICATOR_GAP - cwRect.top);
+    if (!contentWrapper || !isDesktopWidth()) return 0;
+
+    const cwRect = contentWrapper.getBoundingClientRect();
+    const viewportBottom = window.innerHeight;
+
+    // Sisihkan ruang tetap untuk indikator + jarak
+    let target = Math.floor(viewportBottom - (INDICATOR_RESERVED_PX + INDICATOR_GAP) - cwRect.top);
     if (!Number.isFinite(target) || target <= 0) return 0;
+
     const cs = getComputedStyle(contentWrapper);
     const paddings = (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0);
     const borders  = (parseFloat(cs.borderTopWidth) || 0) + (parseFloat(cs.borderBottomWidth) || 0);
@@ -57,12 +73,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function getCardsPerPageDynamic() {
     if (!isDesktopWidth()) return projects.length || 1;
+
     const baseline = isTrueFullscreen() ? BASE_FULLSCREEN : BASE_DESKTOP;
     const avail = getAvailableHeightPx();
     if (!avail) return baseline;
+
     const baselineHeight = baseline * CARD_HEIGHT_PX + (baseline - 1) * ROW_GAP_PX;
     const perCard = CARD_HEIGHT_PX + ROW_GAP_PX;
-    const extra = Math.max(0, Math.floor((avail - baselineHeight) / perCard));
+
+    // Baru: kurangi SAFE_MARGIN_PX supaya sisa kecil pada zoom tidak “naik kelas” jadi 1 kartu
+    const extra = Math.max(0, Math.floor((avail - baselineHeight - SAFE_MARGIN_PX) / perCard));
     return Math.max(baseline, baseline + extra);
   }
 
@@ -71,9 +91,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const applyRule = window.innerWidth >= HEIGHT_RULE_MIN;
     if (!applyRule) { contentWrapper.style.maxHeight = ""; return; }
 
-    const indRect = pageIndicatorsContainer.getBoundingClientRect();
+    // Gunakan reserved px yang sama untuk konsistensi
     const cwRect  = contentWrapper.getBoundingClientRect();
-    let target = Math.floor(indRect.top - INDICATOR_GAP - cwRect.top);
+    const target = Math.floor(window.innerHeight - (INDICATOR_RESERVED_PX + INDICATOR_GAP) - cwRect.top);
     if (!Number.isFinite(target) || target <= 0) { contentWrapper.style.maxHeight = ""; return; }
 
     contentWrapper.style.maxHeight = target + "px";
@@ -113,7 +133,9 @@ document.addEventListener("DOMContentLoaded", function () {
     requestAnimationFrame(capContentWrapperByIndicators);
   }
 
-  function updatePlayPauseIcon() { if (playPauseButton) playPauseButton.textContent = isAutoSliding ? "⏸" : "▶"; }
+  function updatePlayPauseIcon() {
+    if (playPauseButton) playPauseButton.textContent = isAutoSliding ? "⏸" : "▶";
+  }
 
   function startAutoSlide() {
     if (!isAutoSlideAllowed()) return;
@@ -202,7 +224,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function generatePages() {
     const pages = [];
-    const CARDS_PER_PAGE = getCardsPerPageDynamic();
+    lastUsedCPP = getCardsPerPageDynamic();   // simpan CPP yang dipakai saat render
+    const CARDS_PER_PAGE = lastUsedCPP;
+
     for (let i = 0; i < projects.length; i += CARDS_PER_PAGE) {
       pages.push(projects.slice(i, i + CARDS_PER_PAGE));
     }
@@ -231,6 +255,21 @@ document.addEventListener("DOMContentLoaded", function () {
     bindIndicatorEvents();
     applyContainerHeight(); applyFullscreenStyling();
     requestAnimationFrame(capContentWrapperByIndicators);
+
+    // Baru: second pass setelah dot benar-benar terpasang & layout settle
+    if (!secondPassScheduled) {
+      secondPassScheduled = true;
+      requestAnimationFrame(() => {
+        const cpp2 = getCardsPerPageDynamic();
+        secondPassScheduled = false;
+        if (cpp2 !== lastUsedCPP) {
+          // render ulang dengan angka yang benar
+          const prev = Math.min(currentPage, totalPages - 1);
+          renderPages();
+          showPage(prev);
+        }
+      });
+    }
   }
 
   function bindIndicatorEvents() {
@@ -259,7 +298,6 @@ document.addEventListener("DOMContentLoaded", function () {
   function applyResponsiveBehavior() {
     if (!isAutoSlideAllowed()) {
       isAutoSliding = false; updatePlayPauseIcon(); stopAutoSlide();
-      // Versi B: biarkan CSS mengatur nested-scroll (tidak set inline style)
     } else {
       if (isAutoSliding) startAutoSlide();
     }
@@ -288,6 +326,7 @@ document.addEventListener("DOMContentLoaded", function () {
     renderPages(); showPage(prev); applyContainerHeight(); applyResponsiveBehavior(); applyFullscreenStyling();
     requestAnimationFrame(capContentWrapperByIndicators);
   }
+
   let resizeT; const debouncedReflow = () => { clearTimeout(resizeT); resizeT = setTimeout(reflow, 80); };
   window.addEventListener("resize", debouncedReflow);
   window.addEventListener("orientationchange", debouncedReflow);
@@ -295,4 +334,7 @@ document.addEventListener("DOMContentLoaded", function () {
   document.addEventListener("webkitfullscreenchange", reflow);
   document.addEventListener("mozfullscreenchange", reflow);
   document.addEventListener("MSFullscreenChange", reflow);
+
+  // Baru: reflow saat window 'load' (fonts/layout final) + satu tick ekstra
+  window.addEventListener("load", () => { reflow(); setTimeout(reflow, 60); });
 });

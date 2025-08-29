@@ -244,45 +244,115 @@ body {
 .date-value.orange { background: #E29F62; color: #000; }
 .date-value.red    { background: #D2464A;  color: #000; }
 
-/* Status ribbon */
+@media screen and (min-width: 1600px){
+  /* Status ribbon */
 .status {
   position: absolute;
-  top: 21px;
-  right: 10px;
+  right: 0px;
   transform: rotate(270deg) translateY(50%);
   transform-origin: center;
   display: inline-flex;
   justify-content: center;
   padding: 3px 10px;
-  max-width: 100%;
+  width: 120px;
   height: 60px;
   font-size: 10px;
   font-weight: bold;
   text-transform: uppercase;
   color: #fff;
   border-radius: 0 0 6px 6px;
+  -webkit-line-clamp: 2;
 }
 .status-value {
-  display: inline-block;
-  width: 80px;
-  max-height: 26px;
-  margin-top: 22px;
+  /* Reset all conflicting properties */
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  
+  /* Remove all margins and positioning */
+  margin: 0;
+  margin-top: 10px;
+  padding: 4px;
+  
+  /* Dimensions */
+  width: 80px;
+  height: 40px;
+  max-height: 50px;
+  /* border: 3px solid rgb(255, 255, 255); */
+  box-sizing: border-box;
+  
+  /* Text handling */
+  line-height: 1.1;
   overflow: hidden;
-  text-overflow: ellipsis;
   word-wrap: break-word;
+  
+  /* Remove webkit line clamp conflicts */
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: unset;
+  display: flex; /* Override -webkit-box */
 }
+}
+
 .status.completed { background: linear-gradient(to top, rgba(3,255,45,.575), rgba(255,255,255,.025)); }
 .status.countdown { background: linear-gradient(to top, rgba(3,175,255,.575), rgba(255,255,255,.025)); }
 .status.canceled  { background: linear-gradient(to top, rgba(255,3,3,.575), rgba(255,255,255,.025)); }
 
+
+@media screen and (min-width: 1400px) and (max-width: 1599px) {
+  /* Status ribbon */
+.status {
+  position: absolute;
+  right: 10px;
+  transform: rotate(270deg) translateY(50%);
+  transform-origin: center;
+  display: inline-flex;
+  justify-content: center;
+  padding: 3px 10px;
+  width: 100px;
+  height: 60px;
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #fff;
+  border-radius: 0 0 6px 6px;
+  -webkit-line-clamp: 2;
+}
+.status-value {
+  /* Reset all conflicting properties */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  
+  /* Remove all margins and positioning */
+  margin: 0;
+  margin-top: 10px;
+  padding: 4px;
+  
+  /* Dimensions */
+  width: 80px;
+  height: 40px;
+  max-height: 50px;
+  /* border: 3px solid rgb(255, 255, 255); */
+  box-sizing: border-box;
+  
+  /* Text handling */
+  line-height: 1.1;
+  overflow: hidden;
+  word-wrap: break-word;
+  
+  /* Remove webkit line clamp conflicts */
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: unset;
+  display: flex; /* Override -webkit-box */
+}
+}
 /* =========================
    RESPONSIVE: SCROLL-MODE (≤1399px) — force single page vertical
    (elemen carousel disembunyikan)
 ========================= */
+
 @media screen and (max-width: 1399px) and (min-width: 769px) {
   .content-wrapper {
     width: calc(100vw - 40px);
