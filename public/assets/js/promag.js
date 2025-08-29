@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const DESK_GAP    = 12;
 
   // Interval slide (desktop)
-  const SLIDE_INTERVAL = 60000;
+  const SLIDE_INTERVAL = 10000;
 
   // Elemen
   const playPauseButton = document.getElementById("playPauseBtn");
