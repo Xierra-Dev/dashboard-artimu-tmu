@@ -83,7 +83,7 @@ html, body {
 /* Page Indicators */
 .page-indicators {
   position: fixed;
-  bottom: 12px;
+  bottom: 15px; 
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -110,7 +110,7 @@ html, body {
 .project-header {
   display: grid;
   gap: 6px;
-  top: 15px;
+  top: 13px;
   margin-left: 38px;
   max-width: 50%;
   grid-template-columns: 1.5fr 2fr .6fr 1.5fr;
