@@ -350,11 +350,11 @@ html, body {
     overflow: hidden;
   }
   .card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; opacity:.7; }
-  .card-institusi{ font-size:18px; font-weight:bolder; margin-top:10px; margin-right:5px; max-width:65%; -webkit-line-clamp:2; border:1px solid rgba(255,255,255,.3); }
-  .card-proyek{ font-size:15px; font-weight:bold; margin-top:20px; margin-left:8px; max-width:100%; border:1px solid rgba(255,255,255,.3); -webkit-line-clamp:3; }
-  .card-pt{ margin-top:7.5px; margin-left:8px; max-width:100%; max-height:fit-content; border:1px solid rgba(255,255,255,.3); -webkit-line-clamp:1; overflow:hidden; text-overflow:ellipsis; word-wrap:break-word; }
-  .card-pimpro{ font-size:15px; margin-top:10px; margin-left:8px; width:99%; border:1px solid rgba(255,255,255,.3); overflow:hidden; -webkit-line-clamp:1; text-overflow:ellipsis; word-wrap:break-word; }
-  .card-keterangan{ font-size:12px; margin-left:0!important; margin-right:0!important; margin-top:10px; width:98.5%; line-height:1.2; text-align:center; justify-self:center; align-self:center; border:1px solid rgba(255,255,255,.3); }
+  .card-institusi{ font-size:18px; font-weight:bolder; margin-top:10px; margin-right:5px; max-width:65%; -webkit-line-clamp:2;}
+  .card-proyek{ font-size:15px; font-weight:bold; margin-top:20px; margin-left:8px; max-width:100%;-webkit-line-clamp:3; }
+  .card-pt{ margin-top:7.5px; margin-left:8px; max-width:100%; max-height:fit-content;-webkit-line-clamp:1; overflow:hidden; text-overflow:ellipsis; word-wrap:break-word; }
+  .card-pimpro{ font-size:15px; margin-top:10px; margin-left:8px; width:99%;overflow:hidden; -webkit-line-clamp:1; text-overflow:ellipsis; word-wrap:break-word; }
+  .card-keterangan{ font-size:12px; margin-left:0!important; margin-right:0!important; margin-top:10px; width:98.5%; line-height:1.2; text-align:center; justify-self:center; align-self:center;}
   .date-group-1{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:16px 14px; align-items:stretch; }
   .date-group-2{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:16px 14px; align-items:stretch; margin-top:-14px; }
   .date-group{ display:grid; grid-template-rows:auto auto; width:100%; padding:12px 12px; border-radius:12px; box-sizing:border-box; margin:0; }
@@ -364,14 +364,15 @@ html, body {
 
   .card { padding-left:56px !important; padding-right:56px !important; }
   .card .status{
-    position:absolute !important; top:15px !important; right:35px !important;
+    position:absolute !important; top:27px !important; right:35px !important;
     transform:none !important; height:auto !important; padding:10px 18px !important;
-    border-radius:24px !important; z-index:10; box-shadow:0 4px 16px rgba(0,0,0,.2);
+    border-radius:24px !important; z-index:10; box-shadow:0 4px 16px rgba(0,0,0,.2); color: #fff; font-weight: bold;
   }
   .card .status-value{ margin:0 !important; width:auto !important; max-width:260px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; -webkit-line-clamp:initial !important; -webkit-box-orient:initial !important; }
   .card .card-institusi, .card .card-proyek, .card .card-pt, .card .card-pimpro, .card .card-keterangan { margin-left:12px; }
 
   .project-header { display:none; }
+  .left-hover-area, .right-hover-area, .arrow-button, .arrow-button-right, .page-indicators, .indicator-dot, .nav-arrow { display: none !important; }
 }
 
 /* ========================= ≤768px & ≤480px — tetap seperti sebelumnya (tidak diubah) ========================= */
@@ -411,10 +412,6 @@ html, body {
     opacity: 0.7;
   }
 
-  .status {
-    margin-left: 7px;
-  }
-
   .card-institusi{
     font-size: 15px;
     font-weight: bolder;
@@ -429,7 +426,6 @@ html, body {
     font-weight: bold;
     margin-left: 8px;
     max-width: 100%;
-    border: 1px solid rgba(255,255,255,.3);
     -webkit-line-clamp: 3;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -441,7 +437,6 @@ html, body {
     margin-left: 8px;
     max-width: 100%;
     max-height: fit-content;
-    border: 1px solid rgba(255,255,255,.3);
     -webkit-line-clamp: 1;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -453,7 +448,6 @@ html, body {
     margin-top: 10px;
     margin-left: 8px;
     width: 98.5%;
-    border: 1px solid rgba(255,255,255,.3);
     overflow: hidden;
     -webkit-line-clamp: 2;
     text-overflow: ellipsis;
@@ -470,7 +464,6 @@ html, body {
     text-align: center;            /* teks di tengah */
     justify-self: center;          /* center sebagai item grid */
     align-self: center;            /* center secara vertikal pada barisnya */
-    border: 1px solid rgba(255,255,255,.3);
   }
 
   .date-group-1,
@@ -535,10 +528,15 @@ html, body {
     box-shadow: 0 4px 16px rgba(0,0,0,.2);
     font-size: 11px;
     margin-top: 8px;
+    margin-left: 7px;
+    color: #fff; font-weight: bold;
   }
+
   .status-value { margin-top: 0; width: auto; max-height: none; }
 
   .project-header { display: none; }
+
+  .left-hover-area, .right-hover-area, .arrow-button, .arrow-button-right, .page-indicators, .indicator-dot, .nav-arrow { display: none !important; }
 }
 
 /* =========================
@@ -612,7 +610,7 @@ html, body {
     box-sizing: border-box;
   }
 
-  .status { font-size: 10px; padding: 10px 16px; border-radius: 20px; margin-top: 6px; }
+  .status { font-size: 10px; padding: 10px 16px; border-radius: 20px; margin-top: 6px; color: #fff; font-weight: bold; }
 }
 
 /* ======= FORCE SCROLL MODE dari JS ======= */
