@@ -70,6 +70,12 @@ body {
   position: relative;
   flex-shrink: 0;
 
+  --top-gap: 17.5px;                 /* ubah angkanya jika mau */
+    padding-top: var(--top-gap);
+
+    /* tinggi wrapper ikut ditambah agar konten tidak kepotong */
+    height: calc(var(--content-h) + var(--top-gap));
+
   /* debug opsional */
   border: 1px solid rgb(255, 0, 0);
 }
@@ -77,25 +83,27 @@ body {
 /* Container slider */
 .card-pages-promag {
   display: flex;
-  width: 1160px;              /* fallback; dioverride jadi 100% di desktop */
-  height: 500px;
+  width: 1148px;              /* 5*220 + 4*12 */
+  height: 100%;
   transition: transform 0.5s ease;
   will-change: transform;
   flex-shrink: 0;
+  border: 1px solid rgb(255, 174, 0);
 
   /* debug opsional */
   /* border: 1px solid rgb(0, 223, 37); */
 }
 
-/* Grid per halaman — fallback */
+/* Grid per halaman — fallback (dipakai sebelum JS aktif) */
 .page-promag {
-  width: 1160px;              /* fallback; dioverride jadi 100% di desktop */
+  width: 1148px;              /* dioverride jadi 100% di desktop */
   flex-shrink: 0;
 
   display: grid;
-  grid-template-columns: repeat(4, 280px);
-  grid-template-rows: repeat(2, auto);
-  gap: 12px;
+  grid-template-columns: repeat(5, 220px);
+  grid-template-rows: repeat(2, 210px);
+  column-gap: 12px;           /* X tetap 12px */
+  row-gap: 28px;              /* Y LEBIH JAUH */
   padding: 8px 0 0 0;
 
   justify-content: center;
@@ -108,22 +116,22 @@ body {
 ========================= */
 .card-container-promag {
   flex-shrink: 0;
-  width: 280px;
-  height: 235px;
+  width: 220px;
+  height: 210px;
 }
 
 .card-promag {
   display: flex;
   flex-direction: column;
-  width: 280px;
-  height: 235px;
-  padding: 14px;
-  font-size: 15px;
+  width: 220px;
+  height: 210px;
+  padding: 12px;
+  font-size: 13px;            /* diperkecil */
   flex-shrink: 0;
 
   background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
@@ -140,7 +148,7 @@ body {
 /* =========================
    Status Badge
 ========================= */
-.status-promag { display: inline-block; color: #fff; font-size: 12px; font-weight: bold; border-radius: 10px; }
+.status-promag { display: inline-block; color: #fff; font-size: 11px; font-weight: 700; border-radius: 10px; }
 .status-promag .ON-PROGRESS { padding: 2px 6px; color:#fff; background: orange; border-radius:10px; font-weight:bold; }
 .status-promag .COMPLETED   { padding: 2px 6px; color:#fff; background: green;  border-radius:10px; font-weight:bold; }
 .status-promag .PENDING     { padding: 2px 6px; color:#fff; background: #2a0658; border-radius:10px; font-weight:bold; }
@@ -149,10 +157,10 @@ body {
    Card Text
 ========================= */
 .title-promag {
-  margin-top: 16px;
-  padding-bottom: 8px;
-  font-size: 15px;
-  font-weight: bold;
+  margin-top: 12px;
+  padding-bottom: 6px;
+  font-size: 14px;
+  font-weight: 800;
   color: #fff;
   line-height: 1.2;
   overflow: hidden;
@@ -161,17 +169,17 @@ body {
   -webkit-box-orient: vertical;
 }
 
-.subtitle-promag { margin: 3px 0; font-size: 13px; color: #fff; }
-.subtitle-pj-promag { margin: 3px 0; font-size:13px; font-weight:bold; color:#fff; }
-.subtitle-tanggal-promag { font-size:13px; line-height:1; text-align:right; color:#fff; }
+.subtitle-promag { margin: 2px 0; font-size: 12px; color: #fff; }
+.subtitle-pj-promag { margin: 2px 0; font-size:12px; font-weight:bold; color:#fff; }
+.subtitle-tanggal-promag { font-size:12px; line-height:1; text-align:right; color:#fff; }
 
 /* =========================
    Lokasi Badge
 ========================= */
 .lokasi-progress-wrapper-promag {
   display: inline-block;
-  height: 22px;
-  margin-bottom: 5px;
+  height: 20px;
+  margin-bottom: 6px;
   background: #079fa4;
   border-radius: 10px;
   overflow: hidden;
@@ -183,7 +191,7 @@ body {
   height: 100%;
   margin: 0 3px;
   padding-left: 3px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: bold;
   white-space: nowrap;
   color: #fff;
@@ -194,7 +202,7 @@ body {
 /* =========================
    Perusahaan Badge
 ========================= */
-.perusahaan-promag span { display:inline-block; padding:2px 8px; font-size:12px; font-weight:bold; color:#fff; border-radius:10px; }
+.perusahaan-promag span { display:inline-block; padding:2px 8px; font-size:11px; font-weight:bold; color:#fff; border-radius:10px; }
 .perusahaan-promag .TMU { background:#00ced1; }
 .perusahaan-promag .OTI { background:#ff6347; }
 .perusahaan-promag .ARI { background:#32cd32; }
@@ -202,14 +210,14 @@ body {
 /* =========================
    Progress Bar (blended)
 ========================= */
-.progress-wrapper-promag { color:#fff; margin:20px 0 6px; }
-.progress-title-promag { margin-bottom:5px; font-size:13px; font-weight:bold; }
+.progress-wrapper-promag { color:#fff; margin:14px 0 4px; }
+.progress-title-promag { margin-bottom:4px; font-size:12px; font-weight:bold; }
 .progress-container-promag {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 18px;
+  height: 16px;
   background: #ffffff;
   border-radius: 10px;
   overflow: hidden;
@@ -222,7 +230,7 @@ body {
   transition: width 0.35s ease;
   background-color: color-mix(in oklab, #00fd3b var(--mix), #ff0019 calc(100% - var(--mix)));
 }
-.progress-text-promag { position:relative; z-index:1; font-size:11px; font-weight:bold; color:#333; }
+.progress-text-promag { position:relative; z-index:1; font-size:10px; font-weight:bold; color:#333; }
 
 /* =========================
    Page Indicators (desktop only)
@@ -231,9 +239,8 @@ body {
   display: flex !important;
   justify-content: center;
   gap: 8px;
-  margin-top: 20px;
   position: fixed;
-  bottom: 20px;
+  bottom: 25px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 20;
@@ -264,7 +271,7 @@ body {
    MODE SWITCHING VIA CLASS
    ========================================================================= */
 .card-pages-promag.is-carousel {
-  width: 1160px;
+  width: 1148px;
   height: 500px;
   transform: translateX(0); /* akan dioverride JS */
 }
@@ -282,6 +289,12 @@ body {
 /* ---------- DESKTOP (>=1400px) ---------- */
 @media (min-width: 1400px) {
   .content-wrapper-promag {
+    /* variabel lokal tanpa :root */
+    --card-w: 220px;
+    --card-h: 210px;
+    --gap-x: 12px;   /* horizontal */
+    --gap-y: 28px;   /* vertical lebih jauh */
+
     width: calc(100% - 90px);
     overflow: hidden;                  /* cegah page lain terlihat */
     height: var(--content-h, auto);    /* tinggi diatur JS agar 30px di atas indikator */
@@ -298,11 +311,12 @@ body {
   .page-promag {
     width: 100% !important;
     display: grid;
-    grid-template-columns: repeat(4, 280px);
+    grid-template-columns: repeat(5, var(--card-w));
     grid-template-rows: auto;      /* baris template awal */
-    grid-auto-rows: 235px;         /* baris tambahan tingginya 235px */
-    gap: 12px;                      /* gap FIX 12px */
-    justify-content: center;        /* default center; JS bisa ubah ke spread */
+    grid-auto-rows: var(--card-h); /* baris tambahan tingginya card-h */
+    column-gap: var(--gap-x);      /* X tetap */
+    row-gap: var(--gap-y);         /* Y lebih jauh */
+    justify-content: center;       /* default center; JS bisa ubah ke spread */
     align-content: start;
     padding: 8px 0 0 0;
     box-sizing: border-box;
@@ -316,8 +330,8 @@ body {
 
   .card-container-promag,
   .card-promag {
-    width: 280px;
-    height: 235px;
+    width: var(--card-w);
+    height: var(--card-h);
   }
 }
 
@@ -328,7 +342,7 @@ body {
   .content-wrapper-promag {
     width: 100%; max-width: 100%; min-width: 0;
     margin: 5px auto 0;
-    padding: 16px 0 20px;
+    padding: 14px 0 18px;
     overflow: visible;
   }
 
@@ -336,17 +350,19 @@ body {
 
   .page-promag {
     width: 100%;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
     grid-template-rows: auto;
-    gap: clamp(10px, 2.5vw, 16px);
+    gap: clamp(10px, 2.5vw, 16px);  /* simetris pada tablet */
     padding-inline: clamp(12px, 3.5vw, 24px);
-    padding-block: 8px 16px;
+    padding-block: 8px 14px;
     box-sizing: border-box;
   }
 
   .card-container-promag, .card-promag {
     width: 100%;
     height: auto;
+    padding: 12px;
+    font-size: 13px;
   }
 
   #leftArrow, #rightArrow, #playPauseBtn, .page-indicators-promag { display: none !important; }
@@ -367,7 +383,7 @@ body {
 
   .page-promag {
     width: 100%;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: clamp(10px, 3vw, 16px);
     padding-inline: clamp(12px, 4vw, 24px);
     padding-block: 8px 12px;
@@ -375,6 +391,9 @@ body {
   }
 
   .card-container-promag, .card-promag { width: 100%; height: auto; }
+  .title-promag { font-size: 14px; }
+  .subtitle-promag, .subtitle-pj-promag, .subtitle-tanggal-promag { font-size: 12px; }
+
   #leftArrow, #rightArrow, #playPauseBtn, .page-indicators-promag { display: none !important; }
 }
 
@@ -401,8 +420,7 @@ body {
   }
 
   .card-container-promag, .card-promag { width: 100%; height: auto; }
-
-  .title-promag { font-size: 14px; }
+  .title-promag { font-size: 13.5px; }
   .subtitle-promag, .subtitle-pj-promag, .subtitle-tanggal-promag { font-size: 12px; }
 
   #leftArrow, #rightArrow, #playPauseBtn, .page-indicators-promag { display: none !important; }

@@ -8,9 +8,9 @@ document.addEventListener("DOMContentLoaded", function () {
   const HEIGHT_RULE_MIN  = 1400;     // batas tinggi konten utk desktop
   const INDICATOR_GAP    = 20;
 
-  // Desktop: jaminan min 2 baris (= 4 kartu) dengan 2 kolom → min 8/card page
-  const MIN_ROWS     = 2;
-  const MIN_PER_PAGE = 8;
+  // Desktop default: 5 baris x 2 kolom = 10 kartu
+  const MIN_ROWS     = 5;
+  const MIN_PER_PAGE = 10;
   const EPSILON_PX   = 1;
 
   // ===== Elemen UI
@@ -67,9 +67,9 @@ document.addEventListener("DOMContentLoaded", function () {
     return pages;
   }
 
-  // Hanya relevan untuk desktop
+  // Hanya relevan untuk desktop — fallback ikut CSS kecil
   function measureLayout() {
-    let rowGap = 15, padV = 30, cardH = 110;
+    let rowGap = 10, padV = 20, cardH = 92;
 
     const samplePage  = cardPagesContainer.querySelector(".page");
     const sampleInner = cardPagesContainer.querySelector(".page-inner");
@@ -87,7 +87,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const sp   = getComputedStyle(samplePage);
       const top  = parseFloat(sp.paddingTop) || 0;
       const bot  = parseFloat(sp.paddingBottom) || 0;
-      padV = top + bot;
+      padV = top + bot || padV;
     }
 
     if (sampleCard) {
@@ -119,22 +119,22 @@ document.addEventListener("DOMContentLoaded", function () {
     let target    = Math.floor(indRect.top - 20 - cwRect.top);
 
     const { rowGap, cardH, paddings, borders } = measureLayout();
-    const minInnerForTwoRows = (cardH * MIN_ROWS) + rowGap * (MIN_ROWS - 1);
-    const minOuterForTwoRows = Math.ceil(minInnerForTwoRows + paddings + borders);
-    const finalMax           = Math.max(Math.max(target, 200), minOuterForTwoRows);
+    const minInnerForRows = (cardH * MIN_ROWS) + rowGap * (MIN_ROWS - 1);
+    const minOuterForRows = Math.ceil(minInnerForRows + paddings + borders);
+    const finalMax        = Math.max(Math.max(target, 200), minOuterForRows);
 
     contentWrapper.style.maxHeight = finalMax + "px";
     const inner = Math.max(0, finalMax - paddings - borders);
     cardPagesContainer.style.height = inner + "px";
   }
 
-  // Non-desktop: padding halaman 0 (hilangkan gap batch)
+  // Non-desktop: padding halaman 0
   function alignPagesCenter() {
     if (!cardPagesContainer) return;
     document.querySelectorAll(".page").forEach((p) => {
       if (isDesktopWidth()) {
-        p.style.paddingTop    = "15px";
-        p.style.paddingBottom = "15px";
+        p.style.paddingTop    = "10px";
+        p.style.paddingBottom = "10px";
       } else {
         p.style.paddingTop    = "0px";
         p.style.paddingBottom = "0px";
@@ -156,7 +156,7 @@ document.addEventListener("DOMContentLoaded", function () {
     return Math.max(MIN_PER_PAGE, rows * 2); // 2 kolom
   }
 
-  // Render: desktop = paging; non-desktop = 1 halaman berisi semua kartu
+  // Render
   function renderPages(perPage) {
     cardPagesContainer.innerHTML = "";
     pageIndicatorsContainer.innerHTML = "";
@@ -183,7 +183,7 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    // === DESKTOP: PAGING NORMAL ===
+    // === DESKTOP: PAGING ===
     const pages = generatePages(perPage);
     totalPages = pages.length;
 

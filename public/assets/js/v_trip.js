@@ -1,4 +1,4 @@
-// v_trip.js — perbaikan hitung kartu saat first load & zoom 80%
+// v_trip.js — default 5, auto-tambah; jarak ke indikator dipendekkan & .card-pages mengisi ruang
 document.addEventListener("DOMContentLoaded", function () {
   const projects = (window.PROJECTS || []).slice();
 
@@ -6,137 +6,160 @@ document.addEventListener("DOMContentLoaded", function () {
   const SLIDE_INTERVAL = 10000;
 
   const HEIGHT_RULE_MIN = 1400;
-  const INDICATOR_GAP = 10;
-  const CARD_HEIGHT_PX = 105;
-  const ROW_GAP_PX = 15;
-  const BASE_DESKTOP = 4;
+  const INDICATOR_GAP   = 6;     // ↓ lebih rapat
+  const SAFE_MARGIN_PX  = 6;
+
+  // fallback ukuran (selaras CSS sekarang)
+  const FALLBACK_CARD_H  = 86;
+  const FALLBACK_ROW_GAP = 8;
+
+  const BASE_DESKTOP    = 5;     // default/min desktop
   const BASE_FULLSCREEN = 5;
 
-  // Baru: sisihkan ruang indikator & margin aman anti-pembulatan
-  const INDICATOR_RESERVED_PX = 44; // tinggi dot + padding bawah (konstan, tidak tergantung DOM)
-  const SAFE_MARGIN_PX = 4;         // agar “sisa 1-4px” tidak dihitung 1 kartu penuh
+  // ↓ ruang indikator diperkecil supaya wrapper bisa turun mendekati indikator
+  const INDICATOR_RESERVED_PX = 28;
 
-  const playPauseButton = document.getElementById("playPauseBtn");
-  const menuButton = document.getElementById("menuToggle");
-  const menuDropdown = document.getElementById("horizontalMenu");
+  const playPauseButton         = document.getElementById("playPauseBtn");
+  const menuButton              = document.getElementById("menuToggle");
+  const menuDropdown            = document.getElementById("horizontalMenu");
+  const contentWrapper          = document.querySelector(".content-wrapper");
+  const cardPagesContainer      = document.getElementById("cardPages");
+  const pageIndicatorsContainer = document.getElementById("pageIndicators");
+  const leftArrow               = document.getElementById("leftArrow");
+  const rightArrow              = document.getElementById("rightArrow");
 
   let currentPage = 0;
-  let totalPages = 1;
+  let totalPages  = 1;
   let autoSlideInterval = null;
-  let isAutoSliding = true;
+  let isAutoSliding     = true;
 
-  const contentWrapper = document.querySelector(".content-wrapper");
-  const cardPagesContainer = document.getElementById("cardPages");
-  const pageIndicatorsContainer = document.getElementById("pageIndicators");
-  const leftArrow = document.getElementById("leftArrow");
-  const rightArrow = document.getElementById("rightArrow");
-
-  // tracking untuk second-pass
   let lastUsedCPP = 0;
   let secondPassScheduled = false;
 
-  const isDesktopWidth = () => window.innerWidth >= 1400;
+  const isDesktopWidth     = () => window.innerWidth >= 1400;
   const isAutoSlideAllowed = () => window.innerWidth >= 1400;
+  const isTrueFullscreen   = () =>
+    !!(document.fullscreenElement || document.webkitFullscreenElement ||
+       document.mozFullScreenElement || document.msFullscreenElement);
 
-  function isTrueFullscreen() {
-    return !!(
-      document.fullscreenElement ||
-      document.webkitFullscreenElement ||
-      document.mozFullScreenElement ||
-      document.msFullscreenElement
-    );
+  // ===== Measurement helpers =====
+  function measureUnit() {
+    const pageEl = cardPagesContainer.querySelector(".page");
+    const cardEl = cardPagesContainer.querySelector(".page .card");
+    let cardH  = FALLBACK_CARD_H;
+    let rowGap = FALLBACK_ROW_GAP;
+    if (cardEl) {
+      const r = cardEl.getBoundingClientRect();
+      if (Number.isFinite(r.height) && r.height > 0) cardH = r.height;
+    }
+    if (pageEl) {
+      const cs = getComputedStyle(pageEl);
+      const g  = parseFloat(cs.rowGap);
+      if (Number.isFinite(g) && g >= 0) rowGap = g;
+    }
+    return { cardH, rowGap };
   }
 
-  function getMaxPageHeight() {
-    let maxH = 0;
-    const pages = cardPagesContainer.querySelectorAll(".page");
-    pages.forEach((p) => { maxH = Math.max(maxH, p.scrollHeight); });
-    return maxH;
+  function measurePagePaddingTB() {
+    const pageEl = cardPagesContainer.querySelector(".page");
+    if (!pageEl) return 12; // 6 + 6 (CSS)
+    const cs = getComputedStyle(pageEl);
+    return (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0);
   }
 
-  // Baru: tidak lagi memakai top indikator aktual (yang bisa 0 saat awal).
+  // tinggi area yang bisa dipakai .card-pages di dalam wrapper
   function getAvailableHeightPx() {
     if (!contentWrapper || !isDesktopWidth()) return 0;
-
     const cwRect = contentWrapper.getBoundingClientRect();
     const viewportBottom = window.innerHeight;
-
-    // Sisihkan ruang tetap untuk indikator + jarak
-    let target = Math.floor(viewportBottom - (INDICATOR_RESERVED_PX + INDICATOR_GAP) - cwRect.top);
+    let target = Math.floor(
+      viewportBottom - (INDICATOR_RESERVED_PX + INDICATOR_GAP) - cwRect.top
+    );
     if (!Number.isFinite(target) || target <= 0) return 0;
-
     const cs = getComputedStyle(contentWrapper);
     const paddings = (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0);
     const borders  = (parseFloat(cs.borderTopWidth) || 0) + (parseFloat(cs.borderBottomWidth) || 0);
     return Math.max(0, target - paddings - borders);
   }
 
+  // hitung n kartu (min 5, bisa nambah kalau muat)
   function getCardsPerPageDynamic() {
     if (!isDesktopWidth()) return projects.length || 1;
-
     const baseline = isTrueFullscreen() ? BASE_FULLSCREEN : BASE_DESKTOP;
     const avail = getAvailableHeightPx();
     if (!avail) return baseline;
 
-    const baselineHeight = baseline * CARD_HEIGHT_PX + (baseline - 1) * ROW_GAP_PX;
-    const perCard = CARD_HEIGHT_PX + ROW_GAP_PX;
+    const { cardH, rowGap } = measureUnit();
+    const padTB = measurePagePaddingTB();
+    const inner = Math.max(0, avail - padTB);
 
-    // Baru: kurangi SAFE_MARGIN_PX supaya sisa kecil pada zoom tidak “naik kelas” jadi 1 kartu
-    const extra = Math.max(0, Math.floor((avail - baselineHeight - SAFE_MARGIN_PX) / perCard));
-    return Math.max(baseline, baseline + extra);
+    let n = Math.floor((inner + rowGap - SAFE_MARGIN_PX) / (cardH + rowGap));
+    n = Math.max(baseline, n);
+
+    while (n > baseline) {
+      const need = n * cardH + (n - 1) * rowGap;
+      if (need <= inner - SAFE_MARGIN_PX + 0.5) break;
+      n--;
+    }
+    return n;
+  }
+
+  function idealHeightForNCards(n) {
+    const { cardH, rowGap } = measureUnit();
+    const padTB = measurePagePaddingTB();
+    return n * cardH + (n - 1) * rowGap + padTB;
   }
 
   function capContentWrapperByIndicators() {
     if (!contentWrapper || !pageIndicatorsContainer) return;
     const applyRule = window.innerWidth >= HEIGHT_RULE_MIN;
-    if (!applyRule) { contentWrapper.style.maxHeight = ""; return; }
+    if (!applyRule) { contentWrapper.style.maxHeight = ""; contentWrapper.style.overflow = ""; return; }
 
-    // Gunakan reserved px yang sama untuk konsistensi
-    const cwRect  = contentWrapper.getBoundingClientRect();
-    const target = Math.floor(window.innerHeight - (INDICATOR_RESERVED_PX + INDICATOR_GAP) - cwRect.top);
-    if (!Number.isFinite(target) || target <= 0) { contentWrapper.style.maxHeight = ""; return; }
-
+    const cwRect = contentWrapper.getBoundingClientRect();
+    const target = Math.floor(
+      window.innerHeight - (INDICATOR_RESERVED_PX + INDICATOR_GAP) - cwRect.top
+    );
+    if (!Number.isFinite(target) || target <= 0) {
+      contentWrapper.style.maxHeight = "";
+      contentWrapper.style.overflow  = "";
+      return;
+    }
     contentWrapper.style.maxHeight = target + "px";
-    contentWrapper.style.overflow = "hidden";
-
-    const cs = getComputedStyle(contentWrapper);
-    const paddings = (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0);
-    const borders  = (parseFloat(cs.borderTopWidth) || 0) + (parseFloat(cs.borderBottomWidth) || 0);
-    const innerH = Math.max(0, target - paddings - borders);
-    cardPagesContainer.style.height = innerH + "px";
+    contentWrapper.style.overflow  = "hidden";
   }
 
+  // .card-pages mengisi ruang sampai mendekati indikator (tetap tidak memotong kartu)
   function applyContainerHeight() {
     if (!isDesktopWidth()) { cardPagesContainer.style.height = ""; return; }
-    const cpp = getCardsPerPageDynamic();
-    if (cpp >= 5 && isTrueFullscreen()) {
-      requestAnimationFrame(() => {
-        const h = getMaxPageHeight();
-        cardPagesContainer.style.height = (h ? h + 12 : 660) + "px";
-        requestAnimationFrame(capContentWrapperByIndicators);
-      });
-    } else {
-      cardPagesContainer.style.height = "500px";
-      requestAnimationFrame(capContentWrapperByIndicators);
-    }
+
+    const cpp        = getCardsPerPageDynamic();
+    const idealH     = Math.ceil(idealHeightForNCards(cpp));
+    const availInner = getAvailableHeightPx(); // tinggi maksimal yang boleh dipakai
+
+    // Pilih tinggi yang mengisi ruang, tapi tidak melebihi available
+    let h = idealH;
+    if (availInner && availInner > idealH) h = availInner - 2; // margin kecil
+
+    cardPagesContainer.style.height = h + "px";
+    requestAnimationFrame(capContentWrapperByIndicators);
   }
 
   function applyFullscreenStyling() {
     if (!pageIndicatorsContainer) return;
     if (isTrueFullscreen()) {
-      pageIndicatorsContainer.style.bottom = "30px";
-      if (contentWrapper) contentWrapper.style.paddingTop = "20px";
+      pageIndicatorsContainer.style.bottom = "14px";  // ↓ lebih dekat ke bawah
+      if (contentWrapper) contentWrapper.style.paddingTop = "10px";
     } else {
-      pageIndicatorsContainer.style.bottom = "20px";
-      if (contentWrapper) contentWrapper.style.paddingTop = "12px";
+      pageIndicatorsContainer.style.bottom = "10px";  // ↓ lebih dekat ke bawah
+      if (contentWrapper) contentWrapper.style.paddingTop = "8px";
     }
     requestAnimationFrame(capContentWrapperByIndicators);
   }
 
+  // ===== Auto slide =====
   function updatePlayPauseIcon() {
     if (playPauseButton) playPauseButton.textContent = isAutoSliding ? "⏸" : "▶";
   }
-
   function startAutoSlide() {
     if (!isAutoSlideAllowed()) return;
     stopAutoSlide();
@@ -147,16 +170,15 @@ document.addEventListener("DOMContentLoaded", function () {
       else showPage(0);
     }, SLIDE_INTERVAL);
   }
-
   function stopAutoSlide() { if (autoSlideInterval) { clearInterval(autoSlideInterval); autoSlideInterval = null; } }
   window.stopAutoSlide = stopAutoSlide;
-
   function toggleAutoSlide() {
     if (!isAutoSlideAllowed()) return;
     isAutoSliding = !isAutoSliding; updatePlayPauseIcon();
     if (isAutoSliding) startAutoSlide(); else stopAutoSlide();
   }
 
+  // ===== Card template (tanpa perubahan struktur) =====
   function createCardHTML(project) {
     const w = window.innerWidth;
     const isTablet = w <= 1399 && w >= 769;
@@ -222,9 +244,10 @@ document.addEventListener("DOMContentLoaded", function () {
       </div>`;
   }
 
+  // ===== Render & paging =====
   function generatePages() {
     const pages = [];
-    lastUsedCPP = getCardsPerPageDynamic();   // simpan CPP yang dipakai saat render
+    lastUsedCPP = getCardsPerPageDynamic();
     const CARDS_PER_PAGE = lastUsedCPP;
 
     for (let i = 0; i < projects.length; i += CARDS_PER_PAGE) {
@@ -248,22 +271,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
     for (let i = 0; i < totalPages; i++) {
       const dot = document.createElement("div");
-      dot.className = "indicator-dot"; if (i === 0) dot.classList.add("active"); dot.dataset.page = i;
+      dot.className = "indicator-dot";
+      if (i === 0) dot.classList.add("active");
+      dot.dataset.page = i;
       pageIndicatorsContainer.appendChild(dot);
     }
 
     bindIndicatorEvents();
-    applyContainerHeight(); applyFullscreenStyling();
+    applyContainerHeight();
+    applyFullscreenStyling();
     requestAnimationFrame(capContentWrapperByIndicators);
 
-    // Baru: second pass setelah dot benar-benar terpasang & layout settle
+    // Second pass
     if (!secondPassScheduled) {
       secondPassScheduled = true;
       requestAnimationFrame(() => {
         const cpp2 = getCardsPerPageDynamic();
         secondPassScheduled = false;
         if (cpp2 !== lastUsedCPP) {
-          // render ulang dengan angka yang benar
           const prev = Math.min(currentPage, totalPages - 1);
           renderPages();
           showPage(prev);
@@ -275,7 +300,9 @@ document.addEventListener("DOMContentLoaded", function () {
   function bindIndicatorEvents() {
     document.querySelectorAll(".indicator-dot").forEach((dot, index) => {
       dot.addEventListener("click", function (e) {
-        e.stopPropagation(); stopAutoSlide(); showPage(index);
+        e.stopPropagation();
+        stopAutoSlide();
+        showPage(index);
         if (isAutoSliding) startAutoSlide();
       });
     });
@@ -283,9 +310,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function showPage(index) {
     if (index >= 0 && index < totalPages) {
-      currentPage = index; const offset = -index * 100;
+      currentPage = index;
+      const offset = -index * 100;
       cardPagesContainer.style.transform = `translateX(${offset}%)`;
-      updateIndicators(); requestAnimationFrame(capContentWrapperByIndicators);
+      updateIndicators();
+      requestAnimationFrame(capContentWrapperByIndicators);
     }
   }
 
@@ -304,8 +333,13 @@ document.addEventListener("DOMContentLoaded", function () {
     requestAnimationFrame(capContentWrapperByIndicators);
   }
 
-  // Controls
-  playPauseButton?.addEventListener("click", (e) => { e.stopPropagation(); if (!isAutoSlideAllowed()) return; toggleAutoSlide(); });
+  // ===== Controls =====
+  playPauseButton?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (!isAutoSlideAllowed()) return;
+    toggleAutoSlide();
+  });
+
   document.addEventListener("click", function (e) {
     const insideMenu =
       (menuButton && menuButton.contains(e.target)) ||
@@ -313,21 +347,45 @@ document.addEventListener("DOMContentLoaded", function () {
       document.getElementById("submenu")?.contains(e.target);
     if (!insideMenu && isAutoSlideAllowed()) toggleAutoSlide();
   });
-  leftArrow?.addEventListener("click", function (e) { e.stopPropagation(); stopAutoSlide(); if (currentPage > 0) showPage(currentPage - 1); else if (typeof window.goToNextNav === "function") window.goToNextNav(); else showPage(0); if (isAutoSliding && window.innerWidth >= 1400) startAutoSlide(); });
-  rightArrow?.addEventListener("click", function (e) { e.stopPropagation(); stopAutoSlide(); if (currentPage < totalPages - 1) showPage(currentPage + 1); else if (typeof window.goToNextNav === "function") window.goToNextNav(); else showPage(0); if (isAutoSliding && window.innerWidth >= 1400) startAutoSlide(); });
 
-  // Init & Reflow
-  renderPages(); showPage(0);
-  isAutoSliding = isAutoSlideAllowed(); updatePlayPauseIcon(); if (isAutoSliding) startAutoSlide();
+  leftArrow?.addEventListener("click", function (e) {
+    e.stopPropagation();
+    stopAutoSlide();
+    if (currentPage > 0) showPage(currentPage - 1);
+    else if (typeof window.goToNextNav === "function") window.goToNextNav();
+    else showPage(0);
+    if (isAutoSliding && window.innerWidth >= 1400) startAutoSlide();
+  });
+
+  rightArrow?.addEventListener("click", function (e) {
+    e.stopPropagation();
+    stopAutoSlide();
+    if (currentPage < totalPages - 1) showPage(currentPage + 1);
+    else if (typeof window.goToNextNav === "function") window.goToNextNav();
+    else showPage(0);
+    if (isAutoSliding && window.innerWidth >= 1400) startAutoSlide();
+  });
+
+  // ===== Init & Reflow =====
+  renderPages();
+  showPage(0);
+  isAutoSliding = isAutoSlideAllowed();
+  updatePlayPauseIcon();
+  if (isAutoSliding) startAutoSlide();
   applyResponsiveBehavior();
 
   function reflow() {
     const prev = Math.min(currentPage, totalPages - 1);
-    renderPages(); showPage(prev); applyContainerHeight(); applyResponsiveBehavior(); applyFullscreenStyling();
+    renderPages();
+    showPage(prev);
+    applyContainerHeight();
+    applyResponsiveBehavior();
+    applyFullscreenStyling();
     requestAnimationFrame(capContentWrapperByIndicators);
   }
 
-  let resizeT; const debouncedReflow = () => { clearTimeout(resizeT); resizeT = setTimeout(reflow, 80); };
+  let resizeT;
+  const debouncedReflow = () => { clearTimeout(resizeT); resizeT = setTimeout(reflow, 80); };
   window.addEventListener("resize", debouncedReflow);
   window.addEventListener("orientationchange", debouncedReflow);
   document.addEventListener("fullscreenchange", reflow);
@@ -335,6 +393,5 @@ document.addEventListener("DOMContentLoaded", function () {
   document.addEventListener("mozfullscreenchange", reflow);
   document.addEventListener("MSFullscreenChange", reflow);
 
-  // Baru: reflow saat window 'load' (fonts/layout final) + satu tick ekstra
   window.addEventListener("load", () => { reflow(); setTimeout(reflow, 60); });
 });

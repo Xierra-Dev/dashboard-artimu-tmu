@@ -4,13 +4,13 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 // pakai model yang kamu perlukan (contoh MLocModel sementara)
-use App\Models\MLocModel;
+use App\Models\VTripModel;
 
 class VTrip extends BaseController
 {
     public function index()
     {
-        $model = new MLocModel();
+        $model = new VTripModel();
 
         return view('pages/v_trip', [
             'title'     => 'V-Trip Dashboard',

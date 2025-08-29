@@ -1,15 +1,11 @@
 /* ===== Reset & Base ===== */
 * { margin: 0; padding: 0; box-sizing: border-box; }
-
-/* variabel jarak global (dipakai non-desktop) */
 :root { --card-gap: 15px; }
 
 html, body {
   height: 100%;
   width: 100%;
-  margin: 0;
   font-family: sans-serif;
-  padding: 0;
   overflow: hidden; /* Desktop: tidak ada scroll */
 }
 
@@ -29,7 +25,7 @@ video {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* Desktop */
+  overflow: hidden;
 }
 
 /* ===== Content Wrapper ===== */
@@ -39,9 +35,8 @@ video {
   justify-content: center;
   align-items: flex-start;
   width: calc(100% - 90px);
-  max-height: auto;
   margin: 0 auto;
-  overflow: hidden; /* Desktop: sembunyikan overflow */
+  overflow: hidden;
   position: relative;
   z-index: 1;
   border: 1px solid #8bb929; /* opsional */
@@ -51,31 +46,31 @@ video {
   display: flex;
   transition: transform 0.5s ease;
   width: 100%;
-  height: 750px;            /* fallback; dipadamkan di non-desktop */
+  height: 750px;   /* fallback; akan diset JS */
   position: relative;
 }
 
+/* ===== Grid dasar (desktop override di @media) ===== */
 .page {
   min-width: 100%;
   flex-shrink: 0;
   display: grid;
-  row-gap: 15px;
-  column-gap: 15px;
+  row-gap: 10px;                  /* ↓ */
+  column-gap: 12px;               /* ↓ */
   grid-template-columns: repeat(2, 1fr);
-  padding: 15px 0;
+  padding: 10px 0;                /* ↓ */
   box-sizing: border-box;
-  justify-content: center;
   justify-items: stretch;
   align-items: start;
   overflow: hidden;
   align-content: start;
-  grid-auto-rows: 110px;
+  grid-auto-rows: 92px;           /* ↓ tinggi baris */
 }
 
 /* ===== Card Container ===== */
 .card-container {
   width: 100%;
-  min-width: 500px;
+  min-width: 480px;               /* ↓ supaya muat */
   display: flex;
   justify-content: center;
   overflow: hidden;
@@ -84,13 +79,13 @@ video {
 /* ===== Card ===== */
 .card {
   width: 100%;
-  height: 110px;
-  backdrop-filter: blur(20px);
+  height: 92px;                   /* ↓ */
+  backdrop-filter: blur(18px);    /* ↓ */
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 5px;
-  padding: 16px;
-  font-size: 14px;
+  padding: 10px;                  /* ↓ */
+  font-size: 12px;                /* ↓ */
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -101,49 +96,49 @@ video {
 }
 
 .card:nth-child(4n + 1), .card:nth-child(4n + 4) {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.18);
   color: black;
 }
 .card:nth-child(4n + 2), .card:nth-child(4n + 3) {
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: rgba(0, 0, 0, 0.18);
   color: white;
 }
 
 .card-left {
-  flex: 0 0 200px; max-width: 200px; height: 80px;
-  font-weight: bold; color: white; font-size: 16px;
+  flex: 0 0 150px; max-width: 150px; height: 64px;  /* ↓ */
+  font-weight: 700; color: white; font-size: 14px;  /* ↓ */
   display: flex; align-items: center;
-  border-right: 3px solid rgba(255, 255, 255, 0.86);
-  padding-right: 15px; margin-right: 15px; overflow: hidden;
+  border-right: 2px solid rgba(255, 255, 255, 0.75);/* ↓ */
+  padding-right: 10px; margin-right: 10px; overflow: hidden;
 }
-.card-middle { flex: 1; color: white; display: flex; flex-direction: column; justify-content: center; gap: 8px; min-width: 0; overflow: hidden; }
-.card-right  { flex: 0 0 140px; max-width: 140px; color: white; display: flex; flex-direction: column; justify-content: center; align-items: flex-end; overflow: hidden; }
+.card-middle { flex: 1; color: white; display: flex; flex-direction: column; justify-content: center; gap: 5px; min-width: 0; overflow: hidden; }
+.card-right  { flex: 0 0 96px;  max-width: 96px;  color: white; display: flex; flex-direction: column; justify-content: center; align-items: flex-end; overflow: hidden; }
 
 .location {
-  font-size: 15px; font-weight: bold;
-  line-height: 1.25; max-height: calc(1.25em * 2);
+  font-size: 13px; font-weight: 700;               /* ↓ */
+  line-height: 1.2; max-height: calc(1.2em * 2);
   display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2;
   white-space: normal; overflow: hidden; text-overflow: ellipsis; overflow-wrap: anywhere;
 }
 
-.request { font-size: 13px; color: #ffbb00; white-space: nowrap; margin-top: 10px; overflow: hidden; text-overflow: ellipsis; }
-.request span { background: orange; color: black; padding: 2px 6px; border-radius: 8px; font-weight: bold; font-style: italic; white-space: nowrap; }
+.request { font-size: 11px; color: #ffbb00; white-space: nowrap; margin-top: 6px; overflow: hidden; text-overflow: ellipsis; }
+.request span { background: orange; color: black; padding: 2px 6px; border-radius: 8px; font-weight: 700; font-style: italic; white-space: nowrap; }
 
-.dates { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
-.date-label { display: flex; flex-direction: column; align-items: center; font-size: 11px; font-weight: bold; min-width: 0; }
+.dates { display: flex; flex-direction: column; gap: 5px; align-items: flex-end; }
+.date-label { display: flex; flex-direction: column; align-items: center; font-size: 9px; font-weight: 700; min-width: 0; }
 .date-label.leave { color: #c0392b; }
 .date-label.return { color: #27ae60; }
-.date-label span { margin-top: 2px; padding: 4px 8px; border-radius: 10px; color: white; white-space: nowrap; font-size: 10px; }
+.date-label span { margin-top: 2px; padding: 3px 6px; border-radius: 9px; color: white; white-space: nowrap; font-size: 8px; } /* ↓ */
 .leave span  { background: #c0392b; } .return span { background: #27ae60; }
 
 /* ===== Page indicators ===== */
 .page-indicators {
   position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-  display: flex; gap: 12px; z-index: 30;
+  display: flex; gap: 10px; z-index: 30;
 }
-.indicator-dot { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,.4); cursor: pointer; transition: all .3s ease; border: 2px solid transparent; }
-.indicator-dot.active { background: rgba(255,255,255,.9); box-shadow: 0 0 10px rgba(255,255,255,.5); transform: scale(1.2); }
-.indicator-dot:hover { background: rgba(255,255,255,.7); transform: scale(1.1); }
+.indicator-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,.4); cursor: pointer; transition: all .3s ease; border: 2px solid transparent; }
+.indicator-dot.active { background: rgba(255,255,255,.9); box-shadow: 0 0 8px rgba(255,255,255,.5); transform: scale(1.15); }
+.indicator-dot:hover { background: rgba(255,255,255,.7); transform: scale(1.08); }
 
 /* ===== Desktop (≥1400px) ===== */
 @media (min-width: 1400px) {
@@ -151,16 +146,17 @@ video {
   .content-wrapper { max-width: calc(100% - 90px); max-height: calc(100vh - 52px); }
   .page {
     display: flex; justify-content: flex-start; align-items: flex-start;
-    padding: 15px 0; height: 100%; flex-shrink: 0; overflow: hidden;
+    padding: 10px 0; height: 100%; flex-shrink: 0; overflow: hidden; /* ↓ */
   }
   .page-inner {
     display: grid; grid-template-columns: repeat(2, 1fr);
-    column-gap: 15px; row-gap: 15px; width: 100%;
-    align-content: start; justify-items: stretch; grid-auto-rows: 110px;
+    column-gap: 12px; row-gap: 10px;  /* ↓ */
+    width: 100%;
+    align-content: start; justify-items: stretch; grid-auto-rows: 92px; /* ↓ */
   }
   .card-pages { height: 100%; align-content: center !important; }
-  .card-left  { flex: 0 0 180px; max-width: 180px; }
-  .card-right { flex: 0 0 120px; max-width: 120px; }
+  .card-left  { flex: 0 0 150px; max-width: 150px; }  /* ↓ */
+  .card-right { flex: 0 0 96px;  max-width: 96px;  }  /* ↓ */
 }
 
 /* ===== Tablet landscape: 769–1399px ===== */
@@ -172,40 +168,35 @@ video {
 
   .content-wrapper {
     height: auto; max-height: none; max-width: 100%; width: 100%;
-    overflow-x: hidden; padding-bottom: var(--card-gap); /* disamakan dengan antar kartu */
+    overflow-x: hidden; padding-bottom: var(--card-gap);
     margin-top: 20px; box-sizing: border-box;
   }
 
-  .card-pages { display: block; width: 100%; max-width: 100%; height: auto; position: static; transform: none; transition: none; overflow-x: hidden; box-sizing: border-box; }
-  .page       { min-width: auto; width: 100%; max-width: 100%; display: block; height: auto; padding: 0; margin-bottom: 0; overflow-x: hidden; box-sizing: border-box; }
+  .card-pages { display: block; width: 100%; height: auto; position: static; transform: none; transition: none; overflow-x: hidden; box-sizing: border-box; }
+  .page       { width: 100%; display: block; height: auto; padding: 0; margin-bottom: 0; overflow-x: hidden; box-sizing: border-box; }
   .page-inner { display: block; width: 100%; }
 
-  .card-container {
-    width: 100%; max-width: 100%; min-width: auto;
-    margin-bottom: var(--card-gap); /* Jarak antar kartu konsisten */
-    box-sizing: border-box; overflow-x: hidden;
-  }
-  .card-container:last-child { margin-bottom: 0; } /* kartu terakhir tanpa jarak ekstra */
+  .card-container { width: 100%; margin-bottom: var(--card-gap); box-sizing: border-box; overflow-x: hidden; }
+  .card-container:last-child { margin-bottom: 0; }
 
   .card {
-    width: 100%; max-width: 100%; height: auto; min-height: 120px;
+    width: 100%; height: auto; min-height: 120px;
     flex-direction: column; gap: 12px; padding: 15px; margin-bottom: 0;
     box-sizing: border-box; overflow: hidden; margin-left: 35px; margin-right: 35px;
   }
 
   .card-left {
-    flex: none; width: 100%; max-width: 100%; height: auto;
-    border-right: none; border-bottom: 2px solid rgba(255,255,255,.86);
+    flex: none; width: 100%; border-right: none; border-bottom: 2px solid rgba(255,255,255,.86);
     padding-right: 0; padding-bottom: 10px; margin-right: 0; margin-bottom: 10px;
-    text-align: center; font-size: 16px; box-sizing: border-box; overflow: hidden;
+    text-align: center; font-size: 16px;
   }
-  .card-middle, .card-right { flex: none; width: 100%; max-width: 100%; align-items: center; text-align: center; box-sizing: border-box; overflow: hidden; }
+  .card-middle, .card-right { flex: none; width: 100%; max-width: 100%; align-items: center; text-align: center; }
 
   .dates { flex-direction: row; justify-content: space-between; gap: 8px; width: 100%; }
   .date-label { flex: 1; width: 48%; }
   .date-label span { width: 100%; min-width: auto; padding: 6px 4px; font-size: 10px; text-align: center; display: block; }
 
-  .location { font-size: 16px; line-height: 1.25; max-height: calc(1.25em * 2); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; white-space: normal; overflow: hidden; text-overflow: ellipsis; overflow-wrap: anywhere; }
+  .location { font-size: 16px; line-height: 1.25; -webkit-line-clamp: 2; }
   .request  { font-size: 14px; white-space: normal; overflow: visible; text-overflow: unset; }
   #playPauseBtn { display: none !important; }
 }
@@ -217,56 +208,34 @@ video {
   .left-hover-area, .right-hover-area { display: none; }
   .page-indicators { display: none; }
 
-  .content-wrapper {
-    height: auto; max-height: none; max-width: 100%; width: 100%;
-    overflow-x: hidden; padding-bottom: var(--card-gap); /* konsisten */
-    margin-top: 20px; box-sizing: border-box;
-  }
+  .content-wrapper { height: auto; max-height: none; width: 100%; padding-bottom: var(--card-gap); margin-top: 20px; }
+  .card-pages { display: block; width: 100%; height: auto; position: static; transform: none; transition: none; overflow-x: hidden; box-sizing: border-box; }
+  .page       { width: 100%; display: block; height: auto; padding: 0; margin-bottom: 0; overflow-x: hidden; box-sizing: border-box; }
 
-  .card-pages { display: block; width: 100%; max-width: 100%; height: auto; position: static; transform: none; transition: none; overflow-x: hidden; box-sizing: border-box; }
-  .page       { min-width: auto; width: 100%; max-width: 100%; display: block; height: auto; padding: 0; margin-bottom: 0; overflow-x: hidden; box-sizing: border-box; }
-
-  .card-container { width: 100%; max-width: 100%; min-width: auto; margin-bottom: var(--card-gap); box-sizing: border-box; overflow-x: hidden; }
+  .card-container { width: 100%; margin-bottom: var(--card-gap); }
   .card-container:last-child { margin-bottom: 0; }
 
-  .card {
-    width: 100%; max-width: 100%; height: auto; min-height: 120px;
-    flex-direction: column; gap: 12px; padding: 15px; margin-bottom: 0;
-    box-sizing: border-box; overflow: hidden; margin-left: 20px; margin-right: 20px;
-  }
-
-  .card-left {
-    flex: none; width: 100%; max-width: 100%; height: auto;
-    border-right: none; border-bottom: 2px solid rgba(255,255,255,.86);
-    padding-right: 0; padding-bottom: 10px; margin-right: 0; margin-bottom: 10px;
-    text-align: center; font-size: 16px; box-sizing: border-box; overflow: hidden;
-  }
-  .card-middle, .card-right { flex: none; width: 100%; max-width: 100%; align-items: center; text-align: center; box-sizing: border-box; overflow: hidden; }
-
+  .card { width: 100%; padding: 15px; min-height: 120px; flex-direction: column; gap: 12px; margin-left: 20px; margin-right: 20px; }
+  .card-left { width: 100%; font-size: 16px; padding-bottom: 10px; margin-bottom: 10px; border-bottom: 2px solid rgba(255,255,255,.86); border-right: none; }
   .dates { flex-direction: row; justify-content: space-between; gap: 8px; width: 100%; }
   .date-label { flex: 1; width: 48%; }
-  .date-label span { width: 100%; min-width: auto; padding: 6px 4px; font-size: 10px; text-align: center; display: block; }
-
-  .location { font-size: 16px; line-height: 1.25; max-height: calc(1.25em * 2); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; white-space: normal; overflow: hidden; text-overflow: ellipsis; overflow-wrap: anywhere; }
-  .request  { font-size: 14px; white-space: normal; overflow: visible; text-overflow: unset; }
+  .date-label span { width: 100%; padding: 6px 4px; font-size: 10px; text-align: center; display: block; }
+  .location { font-size: 16px; -webkit-line-clamp: 2; }
+  .request  { font-size: 14px; }
   #playPauseBtn { display: none !important; }
 }
 
 /* ===== Mobile kecil ≤480px ===== */
 @media (max-width: 480px) {
-  .main-container { padding: 0 10px; max-width: 100vw; overflow-x: hidden; box-sizing: border-box; }
-  .content-wrapper { margin-top: 10px; padding-bottom: var(--card-gap); width: 100%; max-width: 100%; margin-left: 0; margin-right: 0; overflow-x: hidden; box-sizing: border-box; }
-  .card-pages, .page, .card-container { width: 100%; max-width: 100%; overflow-x: hidden; box-sizing: border-box; }
-
-  .card { width: 100%; max-width: 100%; padding: 12px; min-height: 110px; gap: 10px; box-sizing: border-box; overflow: hidden; }
-  .card-left { width: 100%; max-width: 100%; font-size: 14px; padding-bottom: 8px; margin-bottom: 8px; box-sizing: border-box; overflow: hidden; }
-  .location { font-size: 14px; line-height: 1.25; max-height: calc(1.25em * 2); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; white-space: normal; overflow: hidden; text-overflow: ellipsis; overflow-wrap: anywhere; }
+  .main-container { padding: 0 10px; }
+  .content-wrapper { margin-top: 10px; padding-bottom: var(--card-gap); }
+  .card { padding: 12px; min-height: 110px; gap: 10px; }
+  .card-left { font-size: 14px; padding-bottom: 8px; margin-bottom: 8px; }
+  .location { font-size: 14px; }
   .request { font-size: 12px; }
   .date-label { font-size: 10px; }
   .date-label span { font-size: 9px; padding: 3px 6px; }
   .dates { gap: 6px; }
-  .card-container { margin-bottom: var(--card-gap); }
-  .card-container:last-child { margin-bottom: 0; }
 }
 
 /* ===== Penyeragaman non-desktop (≤1399px) ===== */

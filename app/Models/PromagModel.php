@@ -15,8 +15,8 @@ class PromagModel extends Model
         return [
             [
                 'tanggal' => 'Fri, 19 Jul 2025',
-                'judul' => 'Perawatan Steam Boiler',
-                'lokasi' => 'Dinas Pendidikan Sulawesi Selatan',
+                'judul' => 'Perawatan Steam Boiler;',
+                'lokasi' => 'Dinas Pendidikan Sulawesi Selatan;',
                 'penanggung_jawab' => 'Elvin Mudhita',
                 'perusahaan' => 'TMU',
                 'status' => 'PENDING',

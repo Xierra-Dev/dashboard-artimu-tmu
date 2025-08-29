@@ -23,7 +23,7 @@ class ContractModel extends Model
                 'deliveryDate' => ' 27 Sept 2024',
                 'closeDate'    => '15 Okt 2024',
                 'keterangan'   => 'Testing keterangan 123 apa aja lah asuiydgawyudgaw yiauydgaiuywdgawuiy aydgawuydg auydg aukydgawwaydgauk yuyadgau k',
-                'status'       => '25 hari lagi libur panjang',
+                'status'       => '25 Days Passed',
             ],
             [
                 'institusi'    => 'Dinas Pendidikan Sulawesi Selatan',
