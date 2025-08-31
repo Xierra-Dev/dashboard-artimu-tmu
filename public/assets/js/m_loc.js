@@ -1,6 +1,88 @@
 // m_loc.js — NON-DESKTOP = 1 HALAMAN KONTINU (tanpa paging/gap)
 document.addEventListener("DOMContentLoaded", function () {
-  const projects = Array.isArray(window.PROJECTS) ? window.PROJECTS : [];
+  // ===== Data loader (baru, non-async render first) =====
+  let projects = []; // ganti const → let karena akan di-update setelah fetch opsional
+
+  // helper: escape HTML sederhana
+  function escapeHtml(s) {
+    if (s == null) return "";
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  // helper: format tanggal seperti "dd Mon YYYY HH:mm"
+  // helper: format tanggal seperti "dd Mon YYYY" (tanpa HH:mm)
+function formatDateLikePHP(sql) {
+  if (!sql) return "";
+  const safe = String(sql).replace(" ", "T");
+  const d = new Date(safe);
+
+  // kalau parse berhasil → kembalikan "dd Mon YYYY"
+  if (!isNaN(d)) {
+    const months = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+    const pad = (n) => String(n).padStart(2, "0");
+    return `${pad(d.getDate())} ${months[d.getMonth()]} ${d.getFullYear()}`;
+  }
+
+  // fallback sederhana: ambil bagian tanggalnya saja
+  // contoh "2025-09-01 08:00:00" → "2025-09-01"
+  const onlyDate = String(sql).split(" ")[0] || String(sql);
+  return onlyDate;
+}
+
+
+  // normalisasi baris dari model → shape untuk kartu
+  function normalizeRows(rows) {
+    return (rows || []).map((r) => {
+      const name      = r.name ?? r.people_name ?? "";
+      const location  = r.location ?? r.destination_name ?? "";
+      const requestBy = r.requestBy ?? r.request_by ?? "";
+      const leave     = r.leaveDate ?? r.leaving_date ?? r.leave ?? "";
+      const back      = r.returnDate ?? r.return_date ?? r.return ?? "";
+      return {
+        name:       escapeHtml(name),
+        location:   escapeHtml(location),
+        requestBy:  escapeHtml(requestBy),
+        leaveDate:  escapeHtml(formatDateLikePHP(leave)),
+        returnDate: escapeHtml(formatDateLikePHP(back)),
+      };
+    });
+  }
+
+  // 1) render awal pakai data dari controller (window.PROJECTS)
+  projects = normalizeRows(Array.isArray(window.PROJECTS) ? window.PROJECTS : []);
+
+  // 2) opsional: coba ambil dari endpoint JSON, lalu refresh tampilan jika panjang data berbeda
+  (function refreshFromAPI() {
+    const candidates = ["/mloc/list", "/mloc/json", "/api/mloc", "/mloc/data"];
+    (async () => {
+      for (const url of candidates) {
+        try {
+          const r = await fetch(url, { headers: { Accept: "application/json" } });
+          if (!r.ok) continue;
+          const body = await r.json();
+          const rows = Array.isArray(body) ? body
+                    : Array.isArray(body?.data) ? body.data
+                    : Array.isArray(body?.mloc) ? body.mloc
+                    : Array.isArray(body?.rows) ? body.rows
+                    : null;
+          if (!rows) continue;
+
+          const fresh = normalizeRows(rows);
+          if (fresh.length !== projects.length) {
+            projects = fresh;
+            rebuildPages(); // fungsi di bawah, sudah hoisted
+            showPage(0);
+          }
+          break; // stop di kandidat pertama yang valid
+        } catch (_) { /* lanjut kandidat berikutnya */ }
+      }
+    })();
+  })();
 
   // ===== Konstanta
   const SLIDE_INTERVAL   = 10000;

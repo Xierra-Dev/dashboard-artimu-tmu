@@ -20,4 +20,11 @@ class MLoc extends BaseController
             'logoSub'   => 'WRU',
         ]);
     }
+
+    public function json()
+    {
+        $model = new MLocModel();
+        $rows  = $model->getAll();   // sudah alias: name, location, requestBy, leaveDate, returnDate
+        return $this->response->setJSON(['data' => $rows]);
+    }
 }

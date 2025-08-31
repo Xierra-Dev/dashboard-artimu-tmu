@@ -21,4 +21,12 @@ class VTrip extends BaseController
             'logoSub'   => 'WRU',
         ]);
     }
+
+    public function json()
+    {
+        $model = new VTripModel();
+        $rows  = $model->getAll();  // pastikan getAll() sudah join people/destination/vehicle
+        // Bentuk respons yang didukung JS kamu: array langsung ATAU {data: [...]}
+        return $this->response->setJSON(['data' => $rows]);
+    }
 }
