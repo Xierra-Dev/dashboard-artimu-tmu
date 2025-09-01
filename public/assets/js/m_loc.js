@@ -1,90 +1,63 @@
 // m_loc.js — NON-DESKTOP = 1 HALAMAN KONTINU (tanpa paging/gap)
 document.addEventListener("DOMContentLoaded", function () {
-  // ===== Data loader (baru, non-async render first) =====
-  let projects = []; // ganti const → let karena akan di-update setelah fetch opsional
+  // ===== Loader (ambil dari window.PROJECTS atau /api/mloc) =====
+  async function loadProjects() {
+    let data = Array.isArray(window.PROJECTS) ? window.PROJECTS : [];
 
-  // helper: escape HTML sederhana
-  function escapeHtml(s) {
-    if (s == null) return "";
-    return String(s)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
+    // fallback: coba GET /api/mloc jika window.PROJECTS kosong
+    if (!data.length) {
+      try {
+        const res = await fetch(`${location.origin}/api/mloc`, { cache: "no-store" });
+        if (res.ok) {
+          const json = await res.json();
+          if (json && Array.isArray(json.data)) data = json.data;
+        }
+      } catch (_) {}
+    }
+    // normalisasi + simpan raw datetime untuk filter aktif
+    const norm = data.map(normalizeRecord);
+    // filter: hanya jadwal yang sedang berlangsung sekarang
+    const now = new Date();
+    return norm.filter((item) => isActiveNow(item.leaveDateRaw, item.returnDateRaw, now));
   }
 
-  // helper: format tanggal seperti "dd Mon YYYY HH:mm"
-  // helper: format tanggal seperti "dd Mon YYYY" (tanpa HH:mm)
-function formatDateLikePHP(sql) {
-  if (!sql) return "";
-  const safe = String(sql).replace(" ", "T");
-  const d = new Date(safe);
-
-  // kalau parse berhasil → kembalikan "dd Mon YYYY"
-  if (!isNaN(d)) {
-    const months = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
-    const pad = (n) => String(n).padStart(2, "0");
-    return `${pad(d.getDate())} ${months[d.getMonth()]} ${d.getFullYear()}`;
+  // ==== Helpers tanggal ====
+  function toDateLocal(str) {
+    if (!str) return null;
+    const d = new Date(str.replace(" ", "T")); // treat as local time
+    return isNaN(d.getTime()) ? null : d;
+  }
+  function isActiveNow(leaveRaw, returnRaw, now = new Date()) {
+    const a = toDateLocal(leaveRaw);
+    const b = toDateLocal(returnRaw);
+    if (!a || !b) return false;
+    return a <= now && now <= b; // inclusive
+  }
+  function fmtDateOnly(str) {
+    const d = toDateLocal(str);
+    if (!d) return "";
+    const dd  = String(d.getDate()).padStart(2, "0");
+    const mth = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"][d.getMonth()];
+    const yyyy = d.getFullYear();
+    return `${dd} ${mth} ${yyyy}`;
+  }
+  function normalizeRecord(r) {
+    const leaveRaw  = r.leaveDate  ?? r.leaving_date ?? r.leave_date  ?? "";
+    const returnRaw = r.returnDate ?? r.return_date  ?? "";
+    return {
+      name:       r.name ?? r.people_name ?? "",
+      location:   r.location ?? r.destination_name ?? "",
+      requestBy:  r.requestBy ?? r.request_by ?? "",
+      // simpan raw untuk filter
+      leaveDateRaw:  leaveRaw,
+      returnDateRaw: returnRaw,
+      // tampilan TANPA jam
+      leaveDate:  fmtDateOnly(leaveRaw),
+      returnDate: fmtDateOnly(returnRaw),
+    };
   }
 
-  // fallback sederhana: ambil bagian tanggalnya saja
-  // contoh "2025-09-01 08:00:00" → "2025-09-01"
-  const onlyDate = String(sql).split(" ")[0] || String(sql);
-  return onlyDate;
-}
-
-
-  // normalisasi baris dari model → shape untuk kartu
-  function normalizeRows(rows) {
-    return (rows || []).map((r) => {
-      const name      = r.name ?? r.people_name ?? "";
-      const location  = r.location ?? r.destination_name ?? "";
-      const requestBy = r.requestBy ?? r.request_by ?? "";
-      const leave     = r.leaveDate ?? r.leaving_date ?? r.leave ?? "";
-      const back      = r.returnDate ?? r.return_date ?? r.return ?? "";
-      return {
-        name:       escapeHtml(name),
-        location:   escapeHtml(location),
-        requestBy:  escapeHtml(requestBy),
-        leaveDate:  escapeHtml(formatDateLikePHP(leave)),
-        returnDate: escapeHtml(formatDateLikePHP(back)),
-      };
-    });
-  }
-
-  // 1) render awal pakai data dari controller (window.PROJECTS)
-  projects = normalizeRows(Array.isArray(window.PROJECTS) ? window.PROJECTS : []);
-
-  // 2) opsional: coba ambil dari endpoint JSON, lalu refresh tampilan jika panjang data berbeda
-  (function refreshFromAPI() {
-    const candidates = ["/mloc/list", "/mloc/json", "/api/mloc", "/mloc/data"];
-    (async () => {
-      for (const url of candidates) {
-        try {
-          const r = await fetch(url, { headers: { Accept: "application/json" } });
-          if (!r.ok) continue;
-          const body = await r.json();
-          const rows = Array.isArray(body) ? body
-                    : Array.isArray(body?.data) ? body.data
-                    : Array.isArray(body?.mloc) ? body.mloc
-                    : Array.isArray(body?.rows) ? body.rows
-                    : null;
-          if (!rows) continue;
-
-          const fresh = normalizeRows(rows);
-          if (fresh.length !== projects.length) {
-            projects = fresh;
-            rebuildPages(); // fungsi di bawah, sudah hoisted
-            showPage(0);
-          }
-          break; // stop di kandidat pertama yang valid
-        } catch (_) { /* lanjut kandidat berikutnya */ }
-      }
-    })();
-  })();
-
-  // ===== Konstanta
+  // ===== Konstanta UI =====
   const SLIDE_INTERVAL   = 10000;
   const DESKTOP_MIN      = 1400;     // ≥1400 = desktop (paging + autoslide)
   const HEIGHT_RULE_MIN  = 1400;     // batas tinggi konten utk desktop
@@ -95,7 +68,6 @@ function formatDateLikePHP(sql) {
   const MIN_PER_PAGE = 10;
   const EPSILON_PX   = 1;
 
-  // [NEW] Tambah 10px ruang ekstra supaya border/radius terlihat
   const EXTRA_HEIGHT_BUFFER = 10;
 
   // ===== Elemen UI
@@ -109,6 +81,7 @@ function formatDateLikePHP(sql) {
   const rightArrow              = document.getElementById("rightArrow");
 
   // ===== State
+  let projects = []; // ← akan diisi hasil loadProjects() yang SUDAH DIFILTER aktif
   let currentPage       = 0;
   let autoSlideInterval = null;
   let isAutoSliding     = true;
@@ -116,7 +89,7 @@ function formatDateLikePHP(sql) {
   let lastPerPage       = MIN_PER_PAGE;
   let lastModeDesktop   = null;
 
-  // ===== Helpers
+  // ===== Helpers UI
   const isDesktopWidth     = () => window.innerWidth >= DESKTOP_MIN;
   const isAutoSlideAllowed = () => window.innerWidth >= DESKTOP_MIN;
 
@@ -188,7 +161,6 @@ function formatDateLikePHP(sql) {
     return { rowGap, padV, cardH, paddings, borders };
   }
 
-  // Terapkan batas tinggi hanya pada desktop
   function capContentWrapperByIndicators() {
     if (!contentWrapper || !pageIndicatorsContainer) return;
 
@@ -206,18 +178,14 @@ function formatDateLikePHP(sql) {
     const { rowGap, cardH, paddings, borders } = measureLayout();
     const minInnerForRows = (cardH * MIN_ROWS) + rowGap * (MIN_ROWS - 1);
     const minOuterForRows = Math.ceil(minInnerForRows + paddings + borders);
-
-    // [NEW] tambahkan buffer 10px agar tinggi final sedikit lebih longgar
     const baseMax  = Math.max(Math.max(target, 200), minOuterForRows);
     const finalMax = baseMax + EXTRA_HEIGHT_BUFFER;
 
     contentWrapper.style.maxHeight = finalMax + "px";
-
     const inner = Math.max(0, finalMax - paddings - borders);
     cardPagesContainer.style.height = inner + "px";
   }
 
-  // Non-desktop: padding halaman 0
   function alignPagesCenter() {
     if (!cardPagesContainer) return;
     document.querySelectorAll(".page").forEach((p) => {
@@ -231,7 +199,6 @@ function formatDateLikePHP(sql) {
     });
   }
 
-  // Desktop: hitung kapasitas halaman
   function computeCardsPerPage() {
     const h = cardPagesContainer.clientHeight ||
               cardPagesContainer.getBoundingClientRect().height;
@@ -245,7 +212,6 @@ function formatDateLikePHP(sql) {
     return Math.max(MIN_PER_PAGE, rows * 2); // 2 kolom
   }
 
-  // Render
   function renderPages(perPage) {
     cardPagesContainer.innerHTML = "";
     pageIndicatorsContainer.innerHTML = "";
@@ -425,7 +391,6 @@ function formatDateLikePHP(sql) {
     toggleAutoSlide();
   });
 
-  // Toggle dengan klik halaman (desktop only)
   document.addEventListener("click", (e) => {
     const insideMenu =
       (menuButton && menuButton.contains(e.target)) ||
@@ -464,14 +429,17 @@ function formatDateLikePHP(sql) {
   window.addEventListener("orientationchange", handleResponsiveMode);
   try { window.visualViewport?.addEventListener("resize", handleResponsiveMode); } catch {}
 
-  // ===== Init
-  lastModeDesktop = isDesktopWidth();
-  lastPerPage = lastModeDesktop ? MIN_PER_PAGE : projects.length;
-  renderPages(lastPerPage);
-  showPage(0);
-  handleResponsiveMode();
+  // ===== Init (load → render)
+  (async () => {
+    projects = await loadProjects(); // ← sudah terfilter aktif
+    lastModeDesktop = isDesktopWidth();
+    lastPerPage = lastModeDesktop ? MIN_PER_PAGE : projects.length;
+    renderPages(lastPerPage);
+    showPage(0);
+    handleResponsiveMode();
 
-  console.log(
-    `m_loc.js ready — desktop=${lastModeDesktop}, pages=${totalPages}, perPage=${lastPerPage}, autoslideAllowed=${isAutoSlideAllowed()}`
-  );
+    console.log(
+      `m_loc.js ready — active=${projects.length}, desktop=${lastModeDesktop}, pages=${totalPages}, perPage=${lastPerPage}`
+    );
+  })();
 });
