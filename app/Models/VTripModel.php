@@ -65,7 +65,6 @@ class VTripModel extends Model
             ->join('destination', 'destination.id = v_trip.destination_id', 'left')
             ->join('vehicle',     'vehicle.id = v_trip.vehicle_id', 'left')
             ->where('v_trip.deleted_at', null)
-            //kalau ingin di soft delete dari people, destination, dan vehicle
             ->where('people.deleted_at', null)
             ->where('destination.deleted_at', null)
             ->where('vehicle.deleted_at', null)

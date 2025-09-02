@@ -1,22 +1,93 @@
 // v_trip.js — default 5, auto-tambah; jarak ke indikator dipendekkan & .card-pages mengisi ruang
 document.addEventListener("DOMContentLoaded", function () {
-  // pakai data dari server (window.PROJECTS), lalu filter hanya yang aktif
-  let projects = (window.PROJECTS || []).slice();
+  // ===== Data loader (baru) =====
+  let projects = []; // ganti dari const → let karena bisa di-update setelah fetch opsional
 
-  // ==== Helpers tanggal untuk filter aktif (jam tetap dipakai) ====
-  function toDateLocal(str) {
-    if (!str) return null;
-    const d = new Date(str.replace(" ", "T")); // local time
-    return isNaN(d.getTime()) ? null : d;
+  function escapeHtml(s) {
+    if (s == null) return "";
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
   }
-  function isActiveRange(leaveStr, returnStr, now = new Date()) {
-    const a = toDateLocal(leaveStr);
-    const b = toDateLocal(returnStr);
-    if (!a || !b) return false;
-    return a <= now && now <= b; // inclusive
+
+  // format tanggal: "dd Mon YYYY HH:mm" (jam:menit tetap ditampilkan)
+  function formatDateWithTime(sql) {
+    if (!sql) return "";
+    const safe = String(sql).replace(" ", "T");
+    const d = new Date(safe);
+    if (isNaN(d)) return String(sql);
+    const months = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+    const pad = (n) => String(n).padStart(2, "0");
+    return `${pad(d.getDate())} ${months[d.getMonth()]} ${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
   }
-  // filter sekarang
-  projects = projects.filter((p) => isActiveRange(p.leaveDate, p.returnDate));
+
+  // samakan bentuk objek yang dipakai kartu: {plate, name, location, requestBy, leaveDate, returnDate}
+  function normalizeRows(rows) {
+    return (rows || []).map((r) => {
+      const name      = r.name ?? r.people_name ?? r.personel ?? "";
+      const location  = r.location ?? r.destination_name ?? r.destination ?? "";
+      const requestBy = r.requestBy ?? r.request_by ?? "";
+      // plate: pakai langsung kalau sudah ada; kalau belum, susun dari numberPlate & vehicle_name
+      let plate = r.plate ?? "";
+      if (!plate) {
+        const numberPlate = r.numberPlate ?? r.number_plate ?? "";
+        const vehicleName = r.vehicle_name ?? r.vehicle ?? "";
+        const parts = [];
+        if (numberPlate) parts.push(numberPlate);
+        if (vehicleName) parts.push(vehicleName);
+        plate = parts.join(" - ");
+      }
+      const leave = r.leaveDate ?? r.leaving_date ?? r.leave ?? "";
+      const back  = r.returnDate ?? r.return_date ?? r.return ?? "";
+
+      return {
+        plate:      escapeHtml(plate),
+        name:       escapeHtml(name),
+        location:   escapeHtml(location),
+        requestBy:  escapeHtml(requestBy),
+        leaveDate:  escapeHtml(formatDateWithTime(leave)),
+        returnDate: escapeHtml(formatDateWithTime(back)),
+      };
+    });
+  }
+
+  // 1) render awal pakai data dari controller
+  projects = normalizeRows(Array.isArray(window.PROJECTS) ? window.PROJECTS : []);
+
+  // 2) opsional: coba refresh dari endpoint JSON, lalu re-render bila jumlah data berbeda
+  (function refreshFromAPI() {
+    const candidates = ["/vtrip/list", "/vtrip/json", "/api/vtrip", "/vtrip/data"];
+    (async () => {
+      for (const url of candidates) {
+        try {
+          const r = await fetch(url, { headers: { Accept: "application/json" } });
+          if (!r.ok) continue;
+          const body = await r.json();
+          const rows = Array.isArray(body) ? body
+                    : Array.isArray(body?.data) ? body.data
+                    : Array.isArray(body?.vtrip) ? body.vtrip
+                    : Array.isArray(body?.rows) ? body.rows
+                    : null;
+          if (!rows) continue;
+
+          const fresh = normalizeRows(rows);
+          if (fresh.length !== projects.length) {
+            projects = fresh;
+            // minimal re-render agar tampilan tetap sama
+            renderPages();
+            showPage(0);
+            applyContainerHeight();
+            applyResponsiveBehavior();
+            requestAnimationFrame(capContentWrapperByIndicators);
+          }
+          break; // berhenti di endpoint pertama yang valid
+        } catch (_) { /* lanjut kandidat berikutnya */ }
+      }
+    })();
+  })();
 
   // ===== Konstanta =====
   const SLIDE_INTERVAL = 10000;
