@@ -7,6 +7,10 @@
 
 :root {
   --card-gap: 15px;
+  --bg-dark:  rgba(0, 0, 0, 0.18);
+  --bg-light: rgba(255, 255, 255, 0.18);
+  --fg-dark:  #fff;
+  --fg-light: #000;
 }
 
 html,
@@ -102,17 +106,8 @@ video {
   overflow: hidden;
 }
 
-.card:nth-child(4n + 1),
-.card:nth-child(4n + 4) {
-  background-color: rgba(255, 255, 255, 0.18);
-  color: #000;
-}
-
-.card:nth-child(4n + 2),
-.card:nth-child(4n + 3) {
-  background-color: rgba(0, 0, 0, 0.18);
-  color: #fff;
-}
+.card-container:nth-child(even) .card { background-color: var(--bg-light); color: var(--fg-light); }
+.card-container:nth-child(odd)  .card { background-color: var(--bg-dark);  color: var(--fg-dark); }
 
 .card-left {
   display: flex;
@@ -155,7 +150,7 @@ video {
   font-size: 13px;
   font-weight: 700;               /* kompakan */
   line-height: 1.2;
-  max-height: calc(1.2em * 2);
+  max-height: calc(1.4em * 2);
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -164,10 +159,11 @@ video {
   overflow: hidden;
   text-overflow: ellipsis;
   overflow-wrap: anywhere;
+  line-height: 1.4;
 }
 
 .request {
-  margin-top: 6px;
+  margin-top: 12px;
   font-size: 11px;
   color: #ffbb00;
   white-space: nowrap;
@@ -191,6 +187,7 @@ video {
   flex-direction: column;
   align-items: flex-end;
   gap: 5px;
+  margin-bottom: 2px;
 }
 
 .date-label {
@@ -203,17 +200,21 @@ video {
 }
 
 .date-label.leave {
-  color: #c0392b;
+  font-size: 10px;
+  font-weight: bold;
+  color: #ffffff;
 }
 
 .date-label.return {
-  color: #27ae60;
+  font-size: 10px;
+  font-weight: bold;
+  color: #ffffff;
 }
 
 .date-label span {
   margin-top: 2px;
-  padding: 3px 6px;
-  font-size: 8px;
+  padding: 3px 8px;
+  font-size: 10.5px;
   color: #fff;
   border-radius: 9px;
   white-space: nowrap;
@@ -290,6 +291,27 @@ video {
     width: 100%;
     align-content: start;
     justify-items: stretch;
+  }
+
+  .page-inner .card-container:nth-child(4n+1) .card {
+    background-color: var(--bg-light);
+    color: var(--fg-light);
+  }
+  /* KIRI: item 3,7,11,... (baris genap kiri) */
+  .page-inner .card-container:nth-child(4n+3) .card {
+    background-color: var(--bg-dark);
+    color: var(--fg-dark);
+  }
+
+  /* KANAN: item 2,6,10,... (baris ganjil kanan) */
+  .page-inner .card-container:nth-child(4n+2) .card {
+    background-color: var(--bg-dark);
+    color: var(--fg-dark);
+  }
+  /* KANAN: item 4,8,12,... (baris genap kanan) */
+  .page-inner .card-container:nth-child(4n+4) .card {
+    background-color: var(--bg-light);
+    color: var(--fg-light);
   }
 
   .card-pages {

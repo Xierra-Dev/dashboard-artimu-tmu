@@ -151,6 +151,16 @@ html, body {
   box-sizing: border-box;
 }
 
+.card:nth-child(odd){
+  background-color: rgba(255, 255, 255, 0.18);
+  color: #000;
+}
+
+.card:nth-child(even) {
+  background-color: rgba(0, 0, 0, 0.18);
+  color: #fff;
+}
+
 /* kolom kiri */
 .card-institusi {
   font-weight: 700;
@@ -254,7 +264,6 @@ html, body {
     width: 95px;              /* ↓ */
     height: 50px;              /* ↓ */
     font-size: 9.5px;          /* ↓ */
-    font-weight: 800;
     text-transform: uppercase;
     color: #fff;
     border-radius: 6px;
@@ -297,11 +306,11 @@ html, body {
     width: 86px;               /* ↓ */
     height: 46px;              /* ↓ */
     font-size: 9px;            /* ↓ */
-    font-weight: 800;
     text-transform: uppercase;
     color: #fff;
     border-radius: 0 0 6px 6px;
     -webkit-line-clamp: 2;
+    letter-spacing: .75pt;
   }
 
   /* === Desktop card grid: tambah jarak antar kolom khususnya PT ↔ PIMPRO === */
@@ -610,7 +619,7 @@ html, body {
     box-sizing: border-box;
   }
 
-  .status { font-size: 10px; padding: 10px 16px; border-radius: 20px; margin-top: 6px; color: #fff; font-weight: bold; }
+  .status { font-size: 10px; padding: 10px 16px; border-radius: 20px; margin-top: 6px; color: #fff; }
 }
 
 /* ======= FORCE SCROLL MODE dari JS ======= */

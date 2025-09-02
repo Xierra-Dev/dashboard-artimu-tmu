@@ -283,8 +283,8 @@ document.addEventListener("DOMContentLoaded", function () {
             </div>
             <div class="card-right">
               <div class="request">
-                <div class="request-label">Request By</div>
-                <div class="request-value">${project.requestBy ?? ""}</div>
+                <div class="request-label">Used By</div>
+                <div class="request-value">${project.plate ?? ""}</div>
               </div>
               <div class="dates">
                 <div class="date-group-from">
@@ -306,13 +306,13 @@ document.addEventListener("DOMContentLoaded", function () {
         <div class="card">
           <div class="card-left">
             <div class="plate">${project.plate ?? ""}</div>
-            <div class="name">${project.name ?? ""}</div>
+            <div class="name">${project.plate?? ""}</div>
           </div>
           <div class="card-middle">
             <div class="location">${project.location ?? ""}</div>
             <div class="request">
-              <div class="request-label">Request By</div>
-              <div class="request-value">${project.requestBy ?? ""}</div>
+              <div class="request-label">Used By</div>
+              <div class="request-value">${project.name ?? ""}</div>
             </div>
           </div>
           <div class="card-right">

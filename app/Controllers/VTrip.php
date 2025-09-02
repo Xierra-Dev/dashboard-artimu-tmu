@@ -1,20 +1,21 @@
 <?php
-
+// app/Controllers/VTrip.php
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
-// pakai model yang kamu perlukan (contoh MLocModel sementara)
-use App\Models\VTripModel;
+use App\Services\VTripService;
 
 class VTrip extends BaseController
 {
+    /** Halaman HTML (default: ongoing menit sekarang, bisa diubah via query string) */
     public function index()
     {
-        $model = new VTripModel();
+        $service = new VTripService();
+        $rows    = $service->rowsFromRequest($this->request);
 
         return view('pages/v_trip', [
             'title'     => 'V-Trip Dashboard',
-            'projects'  => $model->getAll(),
+            'projects'  => $rows,
             'pageStyle' => base_url('assets/css/v_trip.css'),
             'pageKey'   => 'vtrip',
             'logoMain'  => 'V-Trip',
@@ -22,11 +23,12 @@ class VTrip extends BaseController
         ]);
     }
 
+    /** Endpoint JSON terpisah */
     public function json()
     {
-        $model = new VTripModel();
-        $rows  = $model->getAll();  // pastikan getAll() sudah join people/destination/vehicle
-        // Bentuk respons yang didukung JS kamu: array langsung ATAU {data: [...]}
+        $service = new VTripService();
+        $rows    = $service->rowsFromRequest($this->request);
+
         return $this->response->setJSON(['data' => $rows]);
     }
 }

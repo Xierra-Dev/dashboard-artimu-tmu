@@ -1,19 +1,21 @@
 <?php
-
+// app/Controllers/MLoc.php
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
-use App\Models\MLocModel;
+use App\Services\MLocService;
 
 class MLoc extends BaseController
 {
+    /** Halaman HTML */
     public function index()
     {
-        $model = new MLocModel();
+        $service = new MLocService();
+        $rows    = $service->rowsFromRequest($this->request);
 
         return view('pages/m_loc', [
             'title'     => 'M-Loc Dashboard',
-            'projects'  => $model->getAll(),
+            'projects'  => $rows, // view-mu konsumsi key 'projects'
             'pageStyle' => base_url('assets/css/m_loc.css'),
             'pageKey'   => 'mloc',
             'logoMain'  => 'M-Loc',
@@ -21,10 +23,12 @@ class MLoc extends BaseController
         ]);
     }
 
+    /** Endpoint JSON */
     public function json()
     {
-        $model = new MLocModel();
-        $rows  = $model->getAll();   // sudah alias: name, location, requestBy, leaveDate, returnDate
+        $service = new MLocService();
+        $rows    = $service->rowsFromRequest($this->request);
+
         return $this->response->setJSON(['data' => $rows]);
     }
 }
