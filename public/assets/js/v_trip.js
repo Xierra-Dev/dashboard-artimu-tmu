@@ -1,8 +1,9 @@
-// v_trip.js — responsive cards & autoslide
+// v_trip.js — responsive cards & autoslide (empty → "-")
 document.addEventListener("DOMContentLoaded", function () {
   // ===== Data loader =====
   let projects = []; // can be updated after optional fetch
 
+  // Escape HTML
   function escapeHtml(s) {
     if (s == null) return "";
     return String(s)
@@ -13,48 +14,54 @@ document.addEventListener("DOMContentLoaded", function () {
       .replace(/'/g, "&#039;");
   }
 
-  // "dd Mon YYYY HH:mm"
+  // Convert any falsy/blank to "-"
+  function toText(v) {
+    const s = v == null ? "" : String(v);
+    const trimmed = s.trim();
+    return trimmed.length ? trimmed : "-";
+  }
+
+  // "dd Mon YYYY HH:mm" (invalid/empty → "-")
   function formatDateWithTime(sql) {
-    if (!sql) return "";
+    if (!sql) return "-";
     const safe = String(sql).replace(" ", "T");
     const d = new Date(safe);
-    if (isNaN(d)) return String(sql);
+    if (isNaN(d)) return "-";
     const months = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
     const pad = (n) => String(n).padStart(2, "0");
     return `${pad(d.getDate())} ${months[d.getMonth()]} ${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
   }
 
-  // Normalizer: simpan vehicleName & numberPlate terpisah (desktop),
-  // dan 'plate' gabungan utk tablet/mobile
+  // Normalizer
   function normalizeRows(rows) {
     return (rows || []).map((r) => {
-      const name      = r.name ?? r.people_name ?? r.personel ?? "";
-      const location  = r.location ?? r.destination_name ?? r.destination ?? "";
-      const requestBy = r.requestBy ?? r.request_by ?? "";
+      const rawName        = r.name ?? r.people_name ?? r.personel ?? "";
+      const rawLocation    = r.location ?? r.destination_name ?? r.destination ?? "";
+      const rawNumberPlate = r.numberPlate ?? r.number_plate ?? "";
+      const rawVehicleName = r.vehicle_name ?? r.vehicle ?? "";
+      const rawLeave       = r.leaveDate ?? r.leaving_date ?? r.leave ?? "";
+      const rawReturn      = r.returnDate ?? r.return_date ?? r.return ?? "";
 
-      const numberPlate = r.numberPlate ?? r.number_plate ?? "";
-      const vehicleName = r.vehicle_name ?? r.vehicle ?? "";
-
-      let plate = r.plate ?? "";
-      if (!plate) {
+      const plateCombined = (() => {
         const parts = [];
-        if (numberPlate) parts.push(numberPlate);
-        if (vehicleName) parts.push(vehicleName);
-        plate = parts.join(" - ");
-      }
-
-      const leave = r.leaveDate ?? r.leaving_date ?? r.leave ?? "";
-      const back  = r.returnDate ?? r.return_date ?? r.return ?? "";
+        const np = String(rawNumberPlate || "").trim();
+        const vn = String(rawVehicleName || "").trim();
+        if (np) parts.push(np);
+        if (vn) parts.push(vn);
+        return parts.join(" - ");
+      })();
 
       return {
-        plate:       escapeHtml(plate),        // gabungan (tablet/mobile)
-        vehicleName: escapeHtml(vehicleName),  // utk desktop (bawah)
-        numberPlate: escapeHtml(numberPlate),  // utk desktop (atas)
-        name:        escapeHtml(name),
-        location:    escapeHtml(location),
-        requestBy:   escapeHtml(requestBy),
-        leaveDate:   escapeHtml(formatDateWithTime(leave)),
-        returnDate:  escapeHtml(formatDateWithTime(back)),
+        // Tablet/mobile
+        plate:       toText(escapeHtml(plateCombined)),
+        // Desktop
+        numberPlate: toText(escapeHtml(rawNumberPlate)),
+        vehicleName: toText(escapeHtml(rawVehicleName)),
+        // Common
+        name:        toText(escapeHtml(rawName)),
+        location:    toText(escapeHtml(rawLocation)),
+        leaveDate:   toText(escapeHtml(formatDateWithTime(rawLeave))),
+        returnDate:  toText(escapeHtml(formatDateWithTime(rawReturn))),
       };
     });
   }
@@ -79,7 +86,7 @@ document.addEventListener("DOMContentLoaded", function () {
           if (!rows) continue;
 
           const fresh = normalizeRows(rows);
-          if (fresh.length !== projects.length) {
+          if (JSON.stringify(fresh) !== JSON.stringify(projects)) {
             projects = fresh;
             renderPages();
             showPage(0);
@@ -116,6 +123,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const pageIndicatorsContainer = document.getElementById("pageIndicators");
   const leftArrow               = document.getElementById("leftArrow");
   const rightArrow              = document.getElementById("rightArrow");
+  const topBar                  = document.querySelector(".top-bar"); // ⬅️ navbar container
 
   let currentPage = 0;
   let totalPages  = 1;
@@ -156,7 +164,6 @@ document.addEventListener("DOMContentLoaded", function () {
     return (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0);
   }
 
-  // tinggi area yang bisa dipakai .card-pages di dalam wrapper
   function getAvailableHeightPx() {
     if (!contentWrapper || !isDesktopWidth()) return 0;
     const cwRect = contentWrapper.getBoundingClientRect();
@@ -171,7 +178,6 @@ document.addEventListener("DOMContentLoaded", function () {
     return Math.max(0, target - paddings - borders);
   }
 
-  // jumlah kartu per halaman (min 5; bisa nambah)
   function getCardsPerPageDynamic() {
     if (!isDesktopWidth()) return projects.length || 1;
     const baseline = isTrueFullscreen() ? BASE_FULLSCREEN : BASE_DESKTOP;
@@ -217,7 +223,6 @@ document.addEventListener("DOMContentLoaded", function () {
     contentWrapper.style.overflow  = "hidden";
   }
 
-  // .card-pages mengisi ruang maksimal tanpa memotong kartu
   function applyContainerHeight() {
     if (!isDesktopWidth()) { cardPagesContainer.style.height = ""; return; }
 
@@ -271,31 +276,30 @@ document.addEventListener("DOMContentLoaded", function () {
     const w = window.innerWidth;
     const isTablet = w <= 1399 && w >= 769;
 
-    // Tablet: pakai gabungan plate (atas), dan Used By = nama orang
     if (isTablet) {
       return `
         <div class="card-container">
           <div class="card">
             <div class="card-left">
-              <div class="plate">${project.plate ?? ""}</div>
-              <div class="name">${project.name ?? ""}</div>
+              <div class="plate">${project.plate}</div>
+              <div class="name">${project.name}</div>
             </div>
             <div class="card-middle">
-              <div class="location">${project.location ?? ""}</div>
+              <div class="location">${project.location}</div>
             </div>
             <div class="card-right">
               <div class="request">
                 <div class="request-label">Used By</div>
-                <div class="request-value">${project.name ?? ""}</div>
+                <div class="request-value">${project.name}</div>
               </div>
               <div class="dates">
                 <div class="date-group-from">
                   <div class="date-title-from">From</div>
-                  <div class="date-value leave">${project.leaveDate ?? ""}</div>
+                  <div class="date-value leave">${project.leaveDate}</div>
                 </div>
                 <div class="date-group-return">
                   <div class="date-title-return">Return</div>
-                  <div class="date-value return">${project.returnDate ?? ""}</div>
+                  <div class="date-value return">${project.returnDate}</div>
                 </div>
               </div>
             </div>
@@ -303,30 +307,30 @@ document.addEventListener("DOMContentLoaded", function () {
         </div>`;
     }
 
-    // Desktop (>=1400px): Atas = numberPlate, Bawah = vehicle_name
+    // Desktop (>=1400px): numberPlate (atas), vehicle_name (bawah)
     return `
       <div class="card-container">
         <div class="card">
           <div class="card-left">
-            <div class="plate">${project.numberPlate || project.plate || ""}</div>
-            <div class="name">${project.vehicleName || ""}</div>
+            <div class="plate">${project.numberPlate}</div>
+            <div class="name">${project.vehicleName}</div>
           </div>
           <div class="card-middle">
-            <div class="location">${project.location ?? ""}</div>
+            <div class="location">${project.location}</div>
             <div class="request">
               <div class="request-label">Used By</div>
-              <div class="request-value">${project.name ?? ""}</div>
+              <div class="request-value">${project.name}</div>
             </div>
           </div>
           <div class="card-right">
             <div class="dates">
               <div class="date-group-from">
                 <div class="date-title-from">From</div>
-                <div class="date-value leave">${project.leaveDate ?? ""}</div>
+                <div class="date-value leave">${project.leaveDate}</div>
               </div>
               <div class="date-group-return">
                 <div class="date-title-return">Return</div>
-                <div class="date-value return">${project.returnDate ?? ""}</div>
+                <div class="date-value return">${project.returnDate}</div>
               </div>
             </div>
           </div>
@@ -372,7 +376,6 @@ document.addEventListener("DOMContentLoaded", function () {
     applyFullscreenStyling();
     requestAnimationFrame(capContentWrapperByIndicators);
 
-    // Second pass: jika cpp berubah setelah render pertama
     if (!secondPassScheduled) {
       secondPassScheduled = true;
       requestAnimationFrame(() => {
@@ -430,12 +433,13 @@ document.addEventListener("DOMContentLoaded", function () {
     toggleAutoSlide();
   });
 
+  // ⬇️ NEW: klik di mana saja KECUALI navbar (.top-bar) untuk toggle pause/play
   document.addEventListener("click", function (e) {
-    const insideMenu =
-      (menuButton && menuButton.contains(e.target)) ||
-      (menuDropdown && menuDropdown.contains(e.target)) ||
-      document.getElementById("submenu")?.contains(e.target);
-    if (!insideMenu && isAutoSlideAllowed()) toggleAutoSlide();
+    // Abaikan klik di dalam navbar
+    if (topBar && topBar.contains(e.target)) return;
+
+    // Elemen tertentu (dots/arrows) sudah memanggil stopPropagation(), jadi aman
+    if (isAutoSlideAllowed()) toggleAutoSlide();
   });
 
   leftArrow?.addEventListener("click", (e) => {

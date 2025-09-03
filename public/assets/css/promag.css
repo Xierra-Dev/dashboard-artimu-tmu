@@ -213,7 +213,6 @@ html, body {
 
   .card-pages-promag, .card-pages-promag.is-carousel {
     width: 100% !important; height: auto;
-    border: 1px solid rgba(255, 255, 255, 0.18);
   }
 
   .page-promag {

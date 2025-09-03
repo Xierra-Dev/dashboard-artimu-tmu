@@ -6,150 +6,151 @@ use CodeIgniter\Model;
 
 class ContractModel extends Model
 {
-    protected $table          = 'pm_project';
-    protected $primaryKey     = 'id';
-    protected $returnType     = 'array';
-    protected $useSoftDeletes = false;
+    // >> PERUBAHAN: arahkan ke koneksi promag
+    protected $DBGroup   = 'promag';
 
-    /**
-     * Ambil kode PT dari pm_company.abbr
-     * (sudah Anda minta sebelumnya).
-     */
-    protected $companyNameField = 'abbr';
+    protected $table      = 'pm_project';
+    protected $primaryKey = 'id';
+    protected $returnType = 'array';
 
-    /** Format tanggal ke "dd M yy" atau "-" bila kosong */
-    private function fmtDate(?string $d): string
+    public function getAll(): array
     {
-        if (!$d || $d === '0000-00-00') return '-';
-        $ts = strtotime($d);
-        return $ts ? date('d M y', $ts) : '-';
+        $db = $this->db;
+
+        $subService = '(SELECT pm_project_id, MAX(bast_date) AS bast_date
+                        FROM pm_project_service
+                        GROUP BY pm_project_id) sv';
+
+        $rows = $db->table('pm_project p')
+            ->select([
+                'p.id              AS project_id',
+                'p.project_name',
+                'p.date_start',
+                'p.date_end',
+                'p.date_delivery',
+                'p.`desc`         AS keterangan',
+
+                'c.client_name    AS institusi',
+
+                'co.abbr          AS pt_abbr',
+                'co.color         AS pt_color',
+
+                'u.fullname       AS pimpro_fullname',
+
+                'sv.bast_date     AS close_bast_date',
+            ])
+            ->join('pm_client c',        'c.id  = p.pm_client_id',  'left')
+            ->join('pm_company co',      'co.id = p.pm_company_id', 'left')
+            ->join('pm_project_user pu', 'pu.pm_project_id = p.id AND pu.as_pimpro = "1"', 'left')
+            ->join('users u',            'u.id = pu.pm_user_id', 'left')
+            ->join($subService,          'sv.pm_project_id = p.id', 'left')
+            ->get()
+            ->getResultArray();
+
+        $today = new \DateTimeImmutable('today');
+
+        $projects = [];
+        foreach ($rows as $r) {
+            $dueRaw   = $r['date_end']        ?? null;
+            $closeRaw = $r['close_bast_date'] ?? null;
+
+            $contract = $this->fmtDate($r['date_start']    ?? null);
+            $due      = $this->fmtDate($dueRaw);
+            $delivery = $this->fmtDate($r['date_delivery'] ?? null);
+            $close    = $this->fmtDate($closeRaw);
+
+            $daysUntilDue = null;
+            if ($this->isValidDate($dueRaw)) {
+                $dDue = new \DateTimeImmutable($dueRaw);
+                $daysUntilDue = (int) $today->diff($dDue)->format('%r%a');
+            }
+
+            $isCompleted = $this->isValidDate($closeRaw);
+
+            if ($isCompleted) {
+                $statusText = 'Selesai';
+            } elseif ($daysUntilDue !== null) {
+                if ($daysUntilDue < 0) {
+                    $statusText = 'Terlambat ' . abs($daysUntilDue) . ' hari';
+                } elseif ($daysUntilDue === 0) {
+                    $statusText = 'Jatuh tempo hari ini';
+                } else {
+                    $statusText = $daysUntilDue . ' hari lagi';
+                }
+            } else {
+                $statusText = 'Tanpa due date';
+            }
+
+            if ($isCompleted) {
+                $sortCat = 2;
+                $key1    = $this->toTimestamp($closeRaw) ?? PHP_INT_MAX;
+            } elseif ($daysUntilDue !== null && $daysUntilDue < 0) {
+                $sortCat = 0;
+                $key1    = $daysUntilDue;
+            } else {
+                $sortCat = 1;
+                $key1    = $daysUntilDue ?? PHP_INT_MAX;
+            }
+
+            $projects[] = [
+                'institusi'    => $r['institusi']        ?? '',
+                'proyek'       => $r['project_name']     ?? '',
+                'pt'           => $r['pt_abbr']          ?? '',
+                'ptColor'      => $r['pt_color']         ?? '#6c43fc',
+                'pimpro'       => $r['pimpro_fullname']  ?? '',
+                'contract'     => $contract,
+                'dueDate'      => $due,
+                'deliveryDate' => $delivery,
+                'closeDate'    => $close,
+                'keterangan'   => $r['keterangan']       ?? '',
+                'status'       => $statusText,
+                '_cat'         => $sortCat,
+                '_key'         => $key1,
+            ];
+        }
+
+        usort($projects, static function ($a, $b) {
+            if ($a['_cat'] !== $b['_cat']) {
+                return $a['_cat'] <=> $b['_cat'];
+            }
+            $cmp = $a['_key'] <=> $b['_key'];
+            if ($cmp !== 0) {
+                return $cmp;
+            }
+            return strcmp($a['institusi'], $b['institusi']);
+        });
+
+        foreach ($projects as &$p) {
+            unset($p['_cat'], $p['_key']);
+        }
+
+        return $projects;
     }
 
-    /**
-     * Hitung selisih hari (due - hari_ini) bertanda:
-     *  +n = H-n (masih sisa n hari), 0 = hari ini, -n = terlambat n hari
-     */
-    private function daysUntil(?string $date): ?int
+    private function isValidDate(?string $date): bool
     {
-        if (!$date || $date === '0000-00-00') return null;
+        if (!$date) return false;
+        if ($date === '0000-00-00' || $date === '1970-01-01') return false;
+        return true;
+    }
+
+    private function fmtDate(?string $date): ?string
+    {
+        if (!$this->isValidDate($date)) return null;
         try {
-            $today = new \DateTimeImmutable('today');  // timezone aplikasi
-            $due   = new \DateTimeImmutable($date);
-            return (int) $today->diff($due)->format('%r%a');
+            return (new \DateTimeImmutable($date))->format('d M y');
         } catch (\Throwable $e) {
             return null;
         }
     }
 
-    /**
-     * Bangun teks & tipe status untuk ribbon.
-     * - Jika sudah ada BAST (close): "SELESAI"
-     * - Jika belum: "H-n" / "Hari ini" / "Terlambat n hari"
-     */
-    private function buildStatus(?string $dueDate, ?string $closeDate): array
+    private function toTimestamp(?string $date): ?int
     {
-        // Sudah close/BAST
-        if ($closeDate && $closeDate !== '0000-00-00') {
-            return ['SELESAI', 'completed', null];
+        if (!$this->isValidDate($date)) return null;
+        try {
+            return (new \DateTimeImmutable($date))->getTimestamp();
+        } catch (\Throwable $e) {
+            return null;
         }
-
-        $days = $this->daysUntil($dueDate);
-        if ($days === null) return ['', 'countdown', null]; // tak ada due
-
-        if ($days > 1)   return ["H-$days", 'countdown', $days];
-        if ($days === 1) return ["H-1",   'countdown', 1];
-        if ($days === 0) return ["Hari ini", 'countdown', 0];
-
-        // Melewati due (negatif)
-        return ["Terlambat " . abs($days) . " hari", 'overdue', $days];
-    }
-
-    /**
-     * Dipanggil dari controller Anda (TIDAK diubah):
-     * $model->getAll()
-     */
-    public function getAll(): array
-    {
-        $b = $this->db->table($this->table . ' p');
-
-        // Pilih 1 pimpro/PM per project (prioritas as_pimpro=1, lalu terbaru)
-        $subPimpro = "
-            SELECT pm_project_id, pm_user_id
-            FROM (
-                SELECT
-                    ppu.pm_project_id,
-                    ppu.pm_user_id,
-                    ROW_NUMBER() OVER (
-                        PARTITION BY ppu.pm_project_id
-                        ORDER BY (ppu.as_pimpro = '1') DESC,
-                                 IFNULL(ppu.updated_at, ppu.created_at) DESC,
-                                 ppu.id DESC
-                    ) AS rn
-                FROM pm_project_user ppu
-            ) x
-            WHERE x.rn = 1
-        ";
-
-        // Ambil BAST (close date) terbaru per project
-        $subBast = "
-            SELECT pm_project_id, MAX(bast_date) AS bast_date
-            FROM pm_project_service
-            GROUP BY pm_project_id
-        ";
-
-        $companyField = $this->companyNameField;
-
-        $b->select("
-            p.id,
-            c.client_name            AS institusi,
-            p.project_name           AS project_name,
-            co.$companyField         AS pt,
-            co.color                 AS pt_color,
-            u.fullname               AS pimpro,
-            p.date_start             AS contract_date,
-            p.date_end               AS due_date,
-            p.date_delivery          AS delivery_date,
-            bast.bast_date           AS close_bast_date,
-            p.`desc`                 AS `desc`
-        ");
-
-        $b->join('pm_client  c',  'c.id  = p.pm_client_id',  'left');
-        $b->join('pm_company co', 'co.id = p.pm_company_id', 'left');
-        $b->join("($subPimpro) pim", 'pim.pm_project_id = p.id', 'left', false);
-        $b->join('users u', 'u.id = pim.pm_user_id', 'left');
-        $b->join("($subBast) bast", 'bast.pm_project_id = p.id', 'left', false);
-
-        $b->orderBy('p.year', 'DESC')
-            ->orderBy('p.date_start', 'ASC')
-            ->orderBy('p.project_name', 'ASC');
-
-        $rows = $b->get()->getResultArray();
-
-        $projects = [];
-        foreach ($rows as $r) {
-            $due   = $r['due_date']        ?? null;
-            $close = $r['close_bast_date'] ?? null;
-
-            [$statusText, $statusType, $daysToDue] = $this->buildStatus($due, $close);
-
-            $projects[] = [
-                'institusi'     => $r['institusi']           ?? '-',
-                'proyek'        => $r['project_name']        ?? '-',
-                'pt'            => $r['pt']                  ?? '',
-                'ptColor'       => $r['pt_color']            ?? '#6b46c1',
-                'pimpro'        => $r['pimpro']              ?? '-',
-                'contract'      => $this->fmtDate($r['contract_date']   ?? null),
-                'dueDate'       => $this->fmtDate($due),
-                'deliveryDate'  => $this->fmtDate($r['delivery_date']    ?? null),
-                'closeDate'     => $this->fmtDate($close),
-                'keterangan'    => $r['desc']                ?? '',
-                // === STATUS COUNTDOWN ===
-                'status'        => $statusText,   // "H-n" / "Hari ini" / "Terlambat n hari" / "SELESAI"
-                'statusType'    => $statusType,   // 'completed' | 'countdown' | 'overdue'
-                'daysToDue'     => $daysToDue,    // integer (bisa negatif)
-            ];
-        }
-
-        return $projects;
     }
 }

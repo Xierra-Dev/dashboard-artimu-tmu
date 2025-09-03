@@ -17,9 +17,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const pageIndicatorsContainer = document.getElementById("pageIndicators");
   const leftArrow = document.getElementById("leftArrow");
   const rightArrow = document.getElementById("rightArrow");
+  const navbar = document.querySelector(".top-bar");
 
   // State
   let currentPage = 0, autoSlideInterval = null, isAutoSliding = true, totalPages = 1, isDesktopMode = false;
+
+  // Helper: ubah nilai kosong/null/whitespace menjadi "-"
+  const asDash = (v) => {
+    const s = (v ?? "").toString().trim();
+    return s.length ? s : "-";
+  };
 
   const clampProgress = (val) => {
     const n = Number(val);
@@ -27,12 +34,12 @@ document.addEventListener("DOMContentLoaded", () => {
     return Math.max(0, Math.min(100, n));
   };
 
-  // Warna progress (tetap gradasi merah→hijau)
+  // Warna progress (gradasi merah→hijau)
   function mixedColor(pct) {
     const t = clampProgress(pct) / 100;
     const red = { r: 220, g: 53,  b: 69 };
     const grn = { r: 40,  g: 167, b: 69 };
-    const lerp = (a, b, t) => Math.round(a + (b - a) * t);
+    const lerp = (a, b, t2) => Math.round(a + (b - a) * t2);
     return `rgb(${lerp(red.r, grn.r, t)}, ${lerp(red.g, grn.g, t)}, ${lerp(red.b, grn.b, t)})`;
   }
 
@@ -122,46 +129,48 @@ document.addEventListener("DOMContentLoaded", () => {
     const lokasiStyle     = p.lokasi_color     ? `background-color:${p.lokasi_color};`       : "";
     const perusahaanStyle = p.perusahaan_color ? `background-color:${p.perusahaan_color};`   : "";
 
-    // Gunakan client_name bila tersedia, fallback ke lokasi lama
-    const clientText = (p.client_name && String(p.client_name).trim())
-      ? p.client_name
-      : (p.lokasi ?? "");
+    // Teks dengan fallback "-" (termasuk client_name → lokasi)
+    const statusText     = asDash(p.status);
+    const tanggalText    = asDash(p.tanggal);
+    const titleText      = asDash(p.judul);
+    const clientText     = asDash(p.client_name ?? p.lokasi);
+    const pimproText     = asDash(p.penanggung_jawab);
+    const perusahaanText = asDash(p.perusahaan);
 
-    const tanggalText = (p.tanggal ?? "") || "";
+    return (
+      '<div class="card-container-promag">' +
+        '<div class="card-promag">' +
+          '<div class="card-content-promag">' +
+            '<div class="tag-date-wrapper-promag">' +
+              '<div class="status-promag">' +
+                `<span style="${statusStyle}">${statusText}</span>` +
+              '</div>' +
+              `<div class="subtitle-tanggal-promag">${tanggalText}</div>` +
+            '</div>' +
 
-    return `
-      <div class="card-container-promag">
-        <div class="card-promag">
-          <div class="card-content-promag">
-            <div class="tag-date-wrapper-promag">
-              <div class="status-promag">
-                <span style="${statusStyle}">${p.status ?? ""}</span>
-              </div>
-              <div class="subtitle-tanggal-promag">${tanggalText}</div>
-            </div>
+            `<div class="title-promag">${titleText}</div>` +
 
-            <div class="title-promag">${p.judul ?? ""}</div>
+            `<div class="lokasi-progress-wrapper-promag" style="${lokasiStyle}">` +
+              `<div class="lokasi-progress-promag">${clientText}</div>` +
+            '</div>' +
 
-            <div class="lokasi-progress-wrapper-promag" style="${lokasiStyle}">
-              <div class="lokasi-progress-promag">${clientText}</div>
-            </div>
+            `<div class="subtitle-pj-promag"><span>${pimproText}</span></div>` +
 
-            <div class="subtitle-pj-promag"><span>${p.penanggung_jawab ?? ""}</span></div>
+            '<div class="perusahaan-promag">' +
+              `<span style="${perusahaanStyle}">${perusahaanText}</span>` +
+            '</div>' +
 
-            <div class="perusahaan-promag">
-              <span style="${perusahaanStyle}">${p.perusahaan ?? ""}</span>
-            </div>
-
-            <div class="progress-wrapper-promag">
-              <div class="progress-title-promag"><span>Progress</span></div>
-              <div class="progress-container-promag">
-                <div class="progress-bar-promag" style="width:${pct}%; --mix:${pct}%; background-color:${color};"></div>
-                <div class="progress-text-promag">${pct}%</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>`;
+            '<div class="progress-wrapper-promag">' +
+              '<div class="progress-title-promag"><span>Progress</span></div>' +
+              '<div class="progress-container-promag">' +
+                `<div class="progress-bar-promag" style="width:${pct}%; --mix:${pct}%; background-color:${color};"></div>` +
+                `<div class="progress-text-promag">${pct}%</div>` +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>'
+    );
   }
 
   function paginateDesktop(itemsPerPage) {
@@ -181,10 +190,12 @@ document.addEventListener("DOMContentLoaded", () => {
     cardPagesContainer.classList.toggle("is-scroll", !isDesktopMode);
 
     const showCarouselUI = (show) => {
-      [leftArrow, rightArrow, pageIndicatorsContainer, playPauseButton].forEach(el => {
-        if (!el) return;
+      const els = [leftArrow, rightArrow, pageIndicatorsContainer, playPauseButton];
+      for (let i = 0; i < els.length; i++) {
+        const el = els[i];
+        if (!el) continue;
         el.style.display = show ? "" : "none";
-      });
+      }
     };
 
     if (isDesktopMode) {
@@ -215,7 +226,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (!isAutoSliding) {
         isAutoSliding = true;
-        playPauseButton && (playPauseButton.textContent = "⏸");
+        if (playPauseButton) playPauseButton.textContent = "⏸";
       }
       startAutoSlide();
 
@@ -225,7 +236,7 @@ document.addEventListener("DOMContentLoaded", () => {
       showCarouselUI(false);
       stopAutoSlide();
       isAutoSliding = false;
-      playPauseButton && (playPauseButton.textContent = "▶");
+      if (playPauseButton) playPauseButton.textContent = "▶";
 
       const pageDiv = document.createElement("div");
       pageDiv.className = "page-promag page-promag--single";
@@ -249,8 +260,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const px = Math.round(getPageWidth());
     cardPagesContainer.style.transform = `translateX(${-currentPage * px}px)`;
 
-    document.querySelectorAll(".indicator-dot-promag")
-      .forEach((dot, i) => dot.classList.toggle("active", i === currentPage));
+    const dots = document.querySelectorAll(".indicator-dot-promag");
+    for (let i = 0; i < dots.length; i++) {
+      dots[i].classList.toggle("active", i === currentPage);
+    }
 
     syncContentWrapperHeight();
     updateDesktopJustify();
@@ -266,47 +279,89 @@ document.addEventListener("DOMContentLoaded", () => {
     }, SLIDE_INTERVAL);
   }
 
-  function stopAutoSlide() { if (autoSlideInterval) { clearInterval(autoSlideInterval); autoSlideInterval = null; } }
+  function stopAutoSlide() {
+    if (autoSlideInterval) {
+      clearInterval(autoSlideInterval);
+      autoSlideInterval = null;
+    }
+  }
   window.stopAutoSlide = stopAutoSlide;
 
   function toggleAutoSlide() {
+    // Toggle hanya relevan di desktop (carousel)
+    if (!isDesktopMode) return;
+
     isAutoSliding = !isAutoSliding;
     if (playPauseButton) playPauseButton.textContent = isAutoSliding ? "⏸" : "▶";
-    if (isDesktopMode) (isAutoSliding ? startAutoSlide() : stopAutoSlide());
+    if (isAutoSliding) startAutoSlide();
+    else stopAutoSlide();
+
     syncContentWrapperHeight();
     updateDesktopJustify();
   }
 
-  playPauseButton?.addEventListener("click", (e) => { e.stopPropagation(); toggleAutoSlide(); });
+  // Tombol play/pause existing
+  if (playPauseButton) {
+    playPauseButton.setAttribute("data-no-toggle", "1");
+    playPauseButton.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleAutoSlide();
+    });
+  }
 
-  leftArrow?.addEventListener("click", (e) => {
-    e.stopPropagation();
-    if (!isDesktopMode) return;
-    stopAutoSlide();
-    if (currentPage > 0) showPage(currentPage - 1);
-    else if (typeof window.goToPrevNav === "function") window.goToPrevNav();
-    else showPage(totalPages - 1);
-    if (isAutoSliding) startAutoSlide();
-  });
+  // Arrow + indikator ditandai agar tidak memicu toggle global
+  if (leftArrow)  leftArrow.setAttribute("data-no-toggle", "1");
+  if (rightArrow) rightArrow.setAttribute("data-no-toggle", "1");
+  if (pageIndicatorsContainer) pageIndicatorsContainer.setAttribute("data-no-toggle", "1");
 
-  rightArrow?.addEventListener("click", (e) => {
-    e.stopPropagation();
-    if (!isDesktopMode) return;
-    stopAutoSlide();
-    if (currentPage < totalPages - 1) showPage(currentPage + 1);
-    else if (typeof window.goToNextNav === "function") window.goToNextNav();
-    else showPage(0);
-    if (isAutoSliding) startAutoSlide();
-  });
+  if (leftArrow) {
+    leftArrow.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (!isDesktopMode) return;
+      stopAutoSlide();
+      if (currentPage > 0) showPage(currentPage - 1);
+      else if (typeof window.goToPrevNav === "function") window.goToPrevNav();
+      else showPage(totalPages - 1);
+      if (isAutoSliding) startAutoSlide();
+    });
+  }
 
-  pageIndicatorsContainer?.addEventListener("click", (e) => {
-    if (!isDesktopMode) return;
-    const dot = e.target.closest(".indicator-dot-promag");
-    if (!dot) return;
-    stopAutoSlide();
-    showPage(Number(dot.dataset.page) || 0);
-    if (isAutoSliding) startAutoSlide();
-  });
+  if (rightArrow) {
+    rightArrow.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (!isDesktopMode) return;
+      stopAutoSlide();
+      if (currentPage < totalPages - 1) showPage(currentPage + 1);
+      else if (typeof window.goToNextNav === "function") window.goToNextNav();
+      else showPage(0);
+      if (isAutoSliding) startAutoSlide();
+    });
+  }
+
+  if (pageIndicatorsContainer) {
+    pageIndicatorsContainer.addEventListener("click", (e) => {
+      if (!isDesktopMode) return;
+      const dot = e.target.closest(".indicator-dot-promag");
+      if (!dot) return;
+      stopAutoSlide();
+      showPage(Number(dot.dataset.page) || 0);
+      if (isAutoSliding) startAutoSlide();
+    });
+  }
+
+  // =========================
+  // ✨ NEW: Toggle Pause/Play dari mana saja kecuali navbar & kontrol
+  // =========================
+  document.addEventListener("click", (e) => {
+    // Abaikan bila klik terjadi di dalam navbar (.top-bar) atau elemen kontrol yang ditandai
+    if (e.target.closest('.top-bar,[data-no-toggle="1"],.dropdown,.submenu,.menu-item')) return;
+
+    // Abaikan bila ada text selection aktif (biar tidak toggle saat drag-select)
+    const sel = window.getSelection && window.getSelection();
+    if (sel && !sel.isCollapsed) return;
+
+    toggleAutoSlide();
+  }, true); // useCapture agar prioritas lebih tinggi dan mudah disaring
 
   // Init + reflow hooks
   renderPages();
@@ -322,8 +377,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 120);
   });
 
+  // fonts.ready (tanpa ?. chaining)
+  if (document.fonts && document.fonts.ready && typeof document.fonts.ready.then === "function") {
+    document.fonts.ready.then(function () {
+      syncContentWrapperHeight();
+      updateDesktopJustify();
+    });
+  }
+
   window.addEventListener("load", () => { syncContentWrapperHeight(); updateDesktopJustify(); });
-  document.fonts?.ready?.then?.(() => { syncContentWrapperHeight(); updateDesktopJustify(); });
   window.addEventListener("orientationchange", () => { syncContentWrapperHeight(); updateDesktopJustify(); });
-  document.addEventListener("visibilitychange", () => { if (!document.hidden) { syncContentWrapperHeight(); updateDesktopJustify(); } });
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) {
+      syncContentWrapperHeight();
+      updateDesktopJustify();
+    }
+  });
 });

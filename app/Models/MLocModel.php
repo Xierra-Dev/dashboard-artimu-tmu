@@ -6,6 +6,9 @@ use CodeIgniter\Model;
 
 class MLocModel extends Model
 {
+    // >> PERUBAHAN: arahkan ke koneksi wru
+    protected $DBGroup   = 'wru';
+
     protected $table      = 'm_loc';
     protected $primaryKey = 'id';
 
@@ -27,7 +30,6 @@ class MLocModel extends Model
     protected $updatedField   = 'updated_at';
     protected $deletedField   = 'deleted_at';
 
-    /** Join standar + kolom tampil */
     private function baseJoined()
     {
         return $this->builder()
@@ -41,12 +43,8 @@ class MLocModel extends Model
             ")
             ->join('people',      'people.id = m_loc.people_id')
             ->join('destination', 'destination.id = m_loc.destination_id');
-        // jika ingin sembunyikan referensi soft-deleted, buka:
-        // ->where('people.deleted_at IS NULL')
-        // ->where('destination.deleted_at IS NULL');
     }
 
-    /** Alias lama (tanpa filter waktu) – opsional */
     public function getAll(): array
     {
         return $this->baseJoined()
@@ -54,7 +52,6 @@ class MLocModel extends Model
             ->get()->getResultArray();
     }
 
-    /** Ongoing pada MENIT tertentu (inklusif) */
     public function getOngoingMinute(?string $nowMinute = null, ?string $tz = null): array
     {
         $tz    = $tz ?: (config('App')->appTimezone ?? 'Asia/Jakarta');
@@ -78,10 +75,6 @@ class MLocModel extends Model
             ->get()->getResultArray();
     }
 
-    /**
-     * Beririsan dgn rentang MENIT [$startMinute, $endMinute] (inklusif).
-     * Contoh: '2025-09-03 00:00' s/d '2025-09-07 23:59'
-     */
     public function getIntersectingMinute(string $startMinute, string $endMinute, ?string $tz = null): array
     {
         $tz    = $tz ?: (config('App')->appTimezone ?? 'Asia/Jakarta');

@@ -270,6 +270,7 @@ html, body {
     color: #fff;
     border-radius: 6px;
     -webkit-line-clamp: 2;
+    letter-spacing: .6pt;
   }
   .status-value {
     display: flex; align-items: center; justify-content: center; text-align: center;
@@ -281,9 +282,29 @@ html, body {
   .card-pt{ padding-right: calc(100% - 500px); }
   .pt-badge{ margin-right: 4px; color: #fff !important;}
 }
-.status.completed { background: linear-gradient(to top, rgba(3,255,45,.575), rgba(255,255,255,.025)); }
-.status.countdown { background: linear-gradient(to top, rgba(3,175,255,.575), rgba(255,255,255,.025)); }
-.status.canceled  { background: linear-gradient(to top, rgba(255,3,3,.575), rgba(255,255,255,.025)); }
+/* === Status mapping final (override) === */
+
+/* Completed = hijau */
+.status.completed {
+  background: linear-gradient(to top, rgba(3,255,45,.575), rgba(255,255,255,.025));
+}
+
+/* Countdown (default) = biru */
+.status.countdown {
+  background: linear-gradient(to top, rgba(255, 218, 6, 0.65), rgba(255,255,255,.025));
+}
+
+/* Canceled & Overdue = merah */
+.status.canceled,
+.status.overdue {
+  background: linear-gradient(to top, rgba(255, 0, 0, 0.575), rgba(255,255,255,.025));
+}
+
+/* Due today = putih; pastikan teks terbaca */
+.status.due-today {
+  background: linear-gradient(to top, rgba(255, 136, 0, 0.575), rgba(255,255,255,.025));
+}
+
 
 @media screen and (min-width: 1400px) and (max-width: 1599px) {
   .status {
@@ -297,11 +318,12 @@ html, body {
     width: 86px;
     height: 46px;
     font-size: 9px;
+    font-weight: 650;
     text-transform: uppercase;
     color: #fff;
     border-radius: 0 0 6px 6px;
     -webkit-line-clamp: 2;
-    letter-spacing: .75pt;
+    letter-spacing: .6pt;
   }
   .card{ column-gap: 14px; }
   .card-pt{ padding-right: 50px; }

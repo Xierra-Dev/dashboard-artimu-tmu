@@ -45,12 +45,37 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const isScrollMode = () => mode !== MODE.DESKTOP;
 
-  // ===== NEW: PT badge helper - teks selalu putih =====
+  // ===== Helper: nilai kosong -> "-" =====
+  const nz = (v) =>
+    v !== null && v !== undefined && String(v).trim() !== "" ? v : "-";
+
+  // ===== NEW: helper untuk badge PT (teks selalu putih; warna dari inline style) =====
   function renderPtBadge(project) {
     const bg = project.ptColor || '#6c43fc';
-    // HANYA background yang diset inline;
-    // warna teks tidak pernah di-set inline supaya selalu pakai CSS (putih).
-    return `<span class="pt-badge" style="background:${bg}">${project.pt ?? ""}</span>`;
+    return `<span class="pt-badge" style="background:${bg}">${nz(project.pt)}</span>`;
+  }
+
+  // ===== NEW: normalisasi status -> class CSS =====
+  function computeStatusClass(statusText, statusKey) {
+    const key = (statusKey || "").toLowerCase().trim();
+    const raw = (statusText || "").toLowerCase();
+
+    const s = key || raw;
+
+    // Selesai
+    if (/(^|[^a-z])(completed|selesai)($|[^a-z])/.test(s)) return "completed";
+
+    // Dibatalkan
+    if (/(^|[^a-z])(canceled|cancelled|batal)($|[^a-z])/.test(s)) return "canceled";
+
+    // Overdue / Terlambat
+    if (/(^|[^a-z])(overdue|terlambat)($|[^a-z])/.test(s)) return "overdue";
+
+    // Due today / Jatuh tempo hari ini
+    if (/(due[-\s]?today|jatuh\s*tempo\s*hari\s*ini)/.test(s)) return "due-today";
+
+    // Default (mis. "X hari lagi", "Tanpa due date", dll.)
+    return "countdown";
   }
 
   // ===== Helpers =====
@@ -97,46 +122,43 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // ====== CARD HTML ======
   function createCardHTML(project) {
-    const status = (project.status || "").toLowerCase();
-    const statusClass =
-      status.includes("completed") ? "completed" :
-      status.includes("canceled")  ? "canceled"  :
-                                     "countdown";
+    const statusText  = nz(project.status || "");
+    const statusClass = computeStatusClass(statusText, project.statusKey || project.statusCode);
 
     if (mode === MODE.DESKTOP) {
       return `
         <div class="card">
-          <div class="card-institusi">${project.institusi ?? ""}</div>
-          <div class="card-proyek">${project.proyek ?? ""}</div>
+          <div class="card-institusi">${nz(project.institusi)}</div>
+          <div class="card-proyek">${nz(project.proyek)}</div>
           <div class="card-pt">${renderPtBadge(project)}</div>
-          <div class="card-pimpro">${project.pimpro ?? ""}</div>
+          <div class="card-pimpro">${nz(project.pimpro)}</div>
 
           <div class="date-group-1">
             <div class="date-group">
               <span class="date-title-contract">Contract</span>
-              <span class="date-value green">${project.contract ?? ""}</span>
+              <span class="date-value green">${nz(project.contract)}</span>
             </div>
             <div class="date-group">
               <span class="date-title-dueDate">Due Date</span>
-              <span class="date-value red">${project.dueDate ?? ""}</span>
+              <span class="date-value red">${nz(project.dueDate)}</span>
             </div>
           </div>
 
           <div class="date-group-2">
             <div class="date-group">
               <span class="date-title-delivery">Delivery</span>
-              <span class="date-value orange">${project.deliveryDate ?? ""}</span>
+              <span class="date-value orange">${nz(project.deliveryDate)}</span>
             </div>
             <div class="date-group">
               <span class="date-title-close">Close</span>
-              <span class="date-value red">${project.closeDate ?? ""}</span>
+              <span class="date-value red">${nz(project.closeDate)}</span>
             </div>
           </div>
 
-          <div class="card-keterangan">${project.keterangan ?? ""}</div>
+          <div class="card-keterangan">${nz(project.keterangan)}</div>
 
           <div class="status ${statusClass}">
-            <div class="status-value">${project.status ?? ""}</div>
+            <div class="status-value">${statusText}</div>
           </div>
         </div>
       `;
@@ -147,39 +169,39 @@ document.addEventListener("DOMContentLoaded", function () {
       return `
         <div class="card">
           <div class="card-top tablet">
-            <div class="card-institusi">${project.institusi ?? ""}</div>
             <div class="status ${statusClass}">
-              <div class="status-value">${project.status ?? ""}</div>
+              <div class="status-value">${statusText}</div>
             </div>
+            <div class="card-institusi">${nz(project.institusi)}</div>
           </div>
 
-          <div class="card-proyek">${project.proyek ?? ""}</div>
+          <div class="card-proyek">${nz(project.proyek)}</div>
           <div class="card-pt">${renderPtBadge(project)}</div>
-          <div class="card-pimpro">${project.pimpro ?? ""}</div>
+          <div class="card-pimpro">${nz(project.pimpro)}</div>
 
           <div class="date-group-1">
             <div class="date-group">
               <span class="date-title-contract">Contract</span>
-              <span class="date-value green">${project.contract ?? ""}</span>
+              <span class="date-value green">${nz(project.contract)}</span>
             </div>
             <div class="date-group">
               <span class="date-title-dueDate">Due Date</span>
-              <span class="date-value red">${project.dueDate ?? ""}</span>
+              <span class="date-value red">${nz(project.dueDate)}</span>
             </div>
           </div>
 
           <div class="date-group-2">
             <div class="date-group">
               <span class="date-title-delivery">Delivery</span>
-              <span class="date-value orange">${project.deliveryDate ?? ""}</span>
+              <span class="date-value orange">${nz(project.deliveryDate)}</span>
             </div>
             <div class="date-group">
               <span class="date-title-close">Close</span>
-              <span class="date-value red">${project.closeDate ?? ""}</span>
+              <span class="date-value red">${nz(project.closeDate)}</span>
             </div>
           </div>
 
-          <div class="card-keterangan">${project.keterangan ?? ""}</div>
+          <div class="card-keterangan">${nz(project.keterangan)}</div>
         </div>
       `;
     }
@@ -189,38 +211,38 @@ document.addEventListener("DOMContentLoaded", function () {
       <div class="card">
         <div class="card-top mobile">
           <div class="status ${statusClass}">
-            <div class="status-value">${project.status ?? ""}</div>
+            <div class="status-value">${statusText}</div>
           </div>
-          <div class="card-institusi">${project.institusi ?? ""}</div>
+          <div class="card-institusi">${nz(project.institusi)}</div>
         </div>
 
-        <div class="card-proyek">${project.proyek ?? ""}</div>
+        <div class="card-proyek">${nz(project.proyek)}</div>
         <div class="card-pt">${renderPtBadge(project)}</div>
-        <div class="card-pimpro">${project.pimpro ?? ""}</div>
+        <div class="card-pimpro">${nz(project.pimpro)}</div>
 
         <div class="date-group-1">
           <div class="date-group">
             <span class="date-title-contract">Contract</span>
-            <span class="date-value green">${project.contract ?? ""}</span>
+            <span class="date-value green">${nz(project.contract)}</span>
           </div>
           <div class="date-group">
             <span class="date-title-dueDate">Due Date</span>
-            <span class="date-value red">${project.dueDate ?? ""}</span>
+            <span class="date-value red">${nz(project.dueDate)}</span>
           </div>
         </div>
 
         <div class="date-group-2">
           <div class="date-group">
             <span class="date-title-delivery">Delivery</span>
-            <span class="date-value orange">${project.deliveryDate ?? ""}</span>
+            <span class="date-value orange">${nz(project.deliveryDate)}</span>
           </div>
           <div class="date-group">
             <span class="date-title-close">Close</span>
-            <span class="date-value red">${project.closeDate ?? ""}</span>
+            <span class="date-value red">${nz(project.closeDate)}</span>
           </div>
         </div>
 
-        <div class="card-keterangan">${project.keterangan ?? ""}</div>
+        <div class="card-keterangan">${nz(project.keterangan)}</div>
       </div>
     `;
   }
@@ -410,9 +432,29 @@ document.addEventListener("DOMContentLoaded", function () {
   if (isAutoSlideAllowed() && isAutoSliding) startAutoSlide();
   else stopAutoSlide();
 
+  // ====== CLICK GUARD (untuk toggle global) ======
+  function clickIsSafeForToggle(e) {
+    if (!isAutoSlideAllowed()) return false;
+
+    const t = e.target;
+
+    // 1) Kecualikan semua klik di navbar (.top-bar)
+    if (t && typeof t.closest === "function" && t.closest(".top-bar")) return false;
+
+    // 2) Abaikan klik pada elemen interaktif (biar nggak ganggu UX)
+    if (t.closest("a, button, [role='button'], input, textarea, select, label")) return false;
+
+    // 3) Abaikan kalau user sedang seleksi teks
+    const sel = window.getSelection && window.getSelection();
+    if (sel && String(sel).length) return false;
+
+    return true;
+  }
+
   // ===== Events =====
   playPauseButton?.addEventListener("click", (e) => { e.stopPropagation(); toggleAutoSlide(); });
 
+  // Card area – tetap bisa toggle, tapi hentikan bubbling agar tidak double toggle dengan listener global
   cardPagesContainer?.addEventListener("click", (e) => {
     if (!isAutoSlideAllowed()) return;
     const target = e.target;
@@ -422,6 +464,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     const sel = window.getSelection && window.getSelection();
     if (sel && String(sel).length) return;
+
+    e.stopPropagation();          // << penting: cegah toggle ganda
     toggleAutoSlide();
   });
 
@@ -451,10 +495,17 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!isAutoSlideAllowed()) return;
     const dot = e.target.closest(".indicator-dot");
     if (!dot) return;
+    e.stopPropagation();          // << penting: cegah toggle ganda dengan listener global
     const idx = parseInt(dot.dataset.page || "0", 10);
     stopAutoSlide();
     showPage(idx);
     if (isAutoSliding) startAutoSlide();
+  });
+
+  // ===== NEW: Global click toggle — klik di mana saja (kecuali navbar) untuk Pause/Play
+  document.addEventListener("click", (e) => {
+    if (!clickIsSafeForToggle(e)) return;
+    toggleAutoSlide();
   });
 
   window.addEventListener("resize", () => { setTimeout(() => recalcAndRerender(true), 80); });
