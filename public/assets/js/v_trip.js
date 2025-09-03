@@ -1,7 +1,7 @@
-// v_trip.js — default 5, auto-tambah; jarak ke indikator dipendekkan & .card-pages mengisi ruang
+// v_trip.js — responsive cards & autoslide
 document.addEventListener("DOMContentLoaded", function () {
-  // ===== Data loader (baru) =====
-  let projects = []; // ganti dari const → let karena bisa di-update setelah fetch opsional
+  // ===== Data loader =====
+  let projects = []; // can be updated after optional fetch
 
   function escapeHtml(s) {
     if (s == null) return "";
@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", function () {
       .replace(/'/g, "&#039;");
   }
 
-  // format tanggal: "dd Mon YYYY HH:mm" (jam:menit tetap ditampilkan)
+  // "dd Mon YYYY HH:mm"
   function formatDateWithTime(sql) {
     if (!sql) return "";
     const safe = String(sql).replace(" ", "T");
@@ -24,32 +24,37 @@ document.addEventListener("DOMContentLoaded", function () {
     return `${pad(d.getDate())} ${months[d.getMonth()]} ${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
   }
 
-  // samakan bentuk objek yang dipakai kartu: {plate, name, location, requestBy, leaveDate, returnDate}
+  // Normalizer: simpan vehicleName & numberPlate terpisah (desktop),
+  // dan 'plate' gabungan utk tablet/mobile
   function normalizeRows(rows) {
     return (rows || []).map((r) => {
       const name      = r.name ?? r.people_name ?? r.personel ?? "";
       const location  = r.location ?? r.destination_name ?? r.destination ?? "";
       const requestBy = r.requestBy ?? r.request_by ?? "";
-      // plate: pakai langsung kalau sudah ada; kalau belum, susun dari numberPlate & vehicle_name
+
+      const numberPlate = r.numberPlate ?? r.number_plate ?? "";
+      const vehicleName = r.vehicle_name ?? r.vehicle ?? "";
+
       let plate = r.plate ?? "";
       if (!plate) {
-        const numberPlate = r.numberPlate ?? r.number_plate ?? "";
-        const vehicleName = r.vehicle_name ?? r.vehicle ?? "";
         const parts = [];
         if (numberPlate) parts.push(numberPlate);
         if (vehicleName) parts.push(vehicleName);
         plate = parts.join(" - ");
       }
+
       const leave = r.leaveDate ?? r.leaving_date ?? r.leave ?? "";
       const back  = r.returnDate ?? r.return_date ?? r.return ?? "";
 
       return {
-        plate:      escapeHtml(plate),
-        name:       escapeHtml(name),
-        location:   escapeHtml(location),
-        requestBy:  escapeHtml(requestBy),
-        leaveDate:  escapeHtml(formatDateWithTime(leave)),
-        returnDate: escapeHtml(formatDateWithTime(back)),
+        plate:       escapeHtml(plate),        // gabungan (tablet/mobile)
+        vehicleName: escapeHtml(vehicleName),  // utk desktop (bawah)
+        numberPlate: escapeHtml(numberPlate),  // utk desktop (atas)
+        name:        escapeHtml(name),
+        location:    escapeHtml(location),
+        requestBy:   escapeHtml(requestBy),
+        leaveDate:   escapeHtml(formatDateWithTime(leave)),
+        returnDate:  escapeHtml(formatDateWithTime(back)),
       };
     });
   }
@@ -57,7 +62,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // 1) render awal pakai data dari controller
   projects = normalizeRows(Array.isArray(window.PROJECTS) ? window.PROJECTS : []);
 
-  // 2) opsional: coba refresh dari endpoint JSON, lalu re-render bila jumlah data berbeda
+  // 2) opsional: refresh dari endpoint JSON pertama yang valid
   (function refreshFromAPI() {
     const candidates = ["/vtrip/list", "/vtrip/json", "/api/vtrip", "/vtrip/data"];
     (async () => {
@@ -76,15 +81,14 @@ document.addEventListener("DOMContentLoaded", function () {
           const fresh = normalizeRows(rows);
           if (fresh.length !== projects.length) {
             projects = fresh;
-            // minimal re-render agar tampilan tetap sama
             renderPages();
             showPage(0);
             applyContainerHeight();
             applyResponsiveBehavior();
             requestAnimationFrame(capContentWrapperByIndicators);
           }
-          break; // berhenti di endpoint pertama yang valid
-        } catch (_) { /* lanjut kandidat berikutnya */ }
+          break;
+        } catch (_) {}
       }
     })();
   })();
@@ -93,17 +97,15 @@ document.addEventListener("DOMContentLoaded", function () {
   const SLIDE_INTERVAL = 10000;
 
   const HEIGHT_RULE_MIN = 1400;
-  const INDICATOR_GAP   = 6;     // ↓ lebih rapat
+  const INDICATOR_GAP   = 6;
   const SAFE_MARGIN_PX  = 6;
 
-  // fallback ukuran (selaras CSS sekarang)
   const FALLBACK_CARD_H  = 86;
   const FALLBACK_ROW_GAP = 8;
 
-  const BASE_DESKTOP    = 5;     // default/min desktop
+  const BASE_DESKTOP    = 5;
   const BASE_FULLSCREEN = 5;
 
-  // ↓ ruang indikator diperkecil supaya wrapper bisa turun mendekati indikator
   const INDICATOR_RESERVED_PX = 28;
 
   const playPauseButton         = document.getElementById("playPauseBtn");
@@ -169,7 +171,7 @@ document.addEventListener("DOMContentLoaded", function () {
     return Math.max(0, target - paddings - borders);
   }
 
-  // hitung n kartu (min 5, bisa nambah kalau muat)
+  // jumlah kartu per halaman (min 5; bisa nambah)
   function getCardsPerPageDynamic() {
     if (!isDesktopWidth()) return projects.length || 1;
     const baseline = isTrueFullscreen() ? BASE_FULLSCREEN : BASE_DESKTOP;
@@ -215,17 +217,16 @@ document.addEventListener("DOMContentLoaded", function () {
     contentWrapper.style.overflow  = "hidden";
   }
 
-  // .card-pages mengisi ruang sampai mendekati indikator (tetap tidak memotong kartu)
+  // .card-pages mengisi ruang maksimal tanpa memotong kartu
   function applyContainerHeight() {
     if (!isDesktopWidth()) { cardPagesContainer.style.height = ""; return; }
 
     const cpp        = getCardsPerPageDynamic();
     const idealH     = Math.ceil(idealHeightForNCards(cpp));
-    const availInner = getAvailableHeightPx(); // tinggi maksimal yang boleh dipakai
+    const availInner = getAvailableHeightPx();
 
-    // Pilih tinggi yang mengisi ruang, tapi tidak melebihi available
     let h = idealH;
-    if (availInner && availInner > idealH) h = availInner - 2; // margin kecil
+    if (availInner && availInner > idealH) h = availInner - 2;
 
     cardPagesContainer.style.height = h + "px";
     requestAnimationFrame(capContentWrapperByIndicators);
@@ -234,10 +235,10 @@ document.addEventListener("DOMContentLoaded", function () {
   function applyFullscreenStyling() {
     if (!pageIndicatorsContainer) return;
     if (isTrueFullscreen()) {
-      pageIndicatorsContainer.style.bottom = "14px";  // ↓ lebih dekat ke bawah
+      pageIndicatorsContainer.style.bottom = "14px";
       if (contentWrapper) contentWrapper.style.paddingTop = "10px";
     } else {
-      pageIndicatorsContainer.style.bottom = "10px";  // ↓ lebih dekat ke bawah
+      pageIndicatorsContainer.style.bottom = "10px";
       if (contentWrapper) contentWrapper.style.paddingTop = "8px";
     }
     requestAnimationFrame(capContentWrapperByIndicators);
@@ -265,11 +266,12 @@ document.addEventListener("DOMContentLoaded", function () {
     if (isAutoSliding) startAutoSlide(); else stopAutoSlide();
   }
 
-  // ===== Card template (tanpa perubahan struktur) =====
+  // ===== Card template =====
   function createCardHTML(project) {
     const w = window.innerWidth;
     const isTablet = w <= 1399 && w >= 769;
 
+    // Tablet: pakai gabungan plate (atas), dan Used By = nama orang
     if (isTablet) {
       return `
         <div class="card-container">
@@ -284,7 +286,7 @@ document.addEventListener("DOMContentLoaded", function () {
             <div class="card-right">
               <div class="request">
                 <div class="request-label">Used By</div>
-                <div class="request-value">${project.plate ?? ""}</div>
+                <div class="request-value">${project.name ?? ""}</div>
               </div>
               <div class="dates">
                 <div class="date-group-from">
@@ -301,12 +303,13 @@ document.addEventListener("DOMContentLoaded", function () {
         </div>`;
     }
 
+    // Desktop (>=1400px): Atas = numberPlate, Bawah = vehicle_name
     return `
       <div class="card-container">
         <div class="card">
           <div class="card-left">
-            <div class="plate">${project.plate ?? ""}</div>
-            <div class="name">${project.plate?? ""}</div>
+            <div class="plate">${project.numberPlate || project.plate || ""}</div>
+            <div class="name">${project.vehicleName || ""}</div>
           </div>
           <div class="card-middle">
             <div class="location">${project.location ?? ""}</div>
@@ -369,7 +372,7 @@ document.addEventListener("DOMContentLoaded", function () {
     applyFullscreenStyling();
     requestAnimationFrame(capContentWrapperByIndicators);
 
-    // Second pass
+    // Second pass: jika cpp berubah setelah render pertama
     if (!secondPassScheduled) {
       secondPassScheduled = true;
       requestAnimationFrame(() => {

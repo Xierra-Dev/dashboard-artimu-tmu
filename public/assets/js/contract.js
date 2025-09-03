@@ -5,20 +5,18 @@ document.addEventListener("DOMContentLoaded", function () {
   const projects = Array.isArray(window.PROJECTS) ? window.PROJECTS : [];
 
   // ===== Layout constants (desktop) =====
-  // Default 5 kartu tampil di desktop
   const MIN_CARDS_PER_PAGE_DESKTOP = 5;
   const SLIDE_INTERVAL = 10000;
-          // (lama) dipakai untuk jarak aman indikator
-  const getDotBottomGap = () => {             // CHANGED: jadikan dinamis per breakpoint
+
+  const getDotBottomGap = () => {
     const w = window.innerWidth;
-    if (w >= 1600) return 50;                 // layar lebar: jarak sedikit lebih besar
-    if (w >= 1400) return 40;                 // 1400–1599px: jarak sedang
-    return 24;                                // default (tak berpengaruh di scroll-mode)
+    if (w >= 1600) return 50;
+    if (w >= 1400) return 40;
+    return 24;
   };
 
-  // Tinggi baris desktop lebih kompak
-  const BASE_ROW_H_DESKTOP = 96;   // ↓ dari 104/120
-  const MIN_ROW_H_DESKTOP  = 80;   // ↓ dari 84/92
+  const BASE_ROW_H_DESKTOP = 96;
+  const MIN_ROW_H_DESKTOP  = 80;
 
   // ===== Elements =====
   const playPauseButton         = document.getElementById("playPauseBtn");
@@ -47,6 +45,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const isScrollMode = () => mode !== MODE.DESKTOP;
 
+  // ===== NEW: PT badge helper - teks selalu putih =====
+  function renderPtBadge(project) {
+    const bg = project.ptColor || '#6c43fc';
+    // HANYA background yang diset inline;
+    // warna teks tidak pernah di-set inline supaya selalu pakai CSS (putih).
+    return `<span class="pt-badge" style="background:${bg}">${project.pt ?? ""}</span>`;
+  }
+
   // ===== Helpers =====
   function reflectModeClass() {
     document.documentElement.classList.toggle("contract-scroll-mode", isScrollMode());
@@ -58,7 +64,6 @@ document.addEventListener("DOMContentLoaded", function () {
     playPauseButton.textContent = autoSlideInterval ? "⏸" : "▶";
   }
 
-  // Desktop only
   function calcAvailableHeight() {
     const vpH = window.innerHeight;
     const top = cardPagesContainer.getBoundingClientRect().top;
@@ -67,14 +72,12 @@ document.addEventListener("DOMContentLoaded", function () {
       const r = pageIndicatorsContainer.getBoundingClientRect();
       indH = r.height || 0;
     }
-    // return Math.max(0, vpH - top - indH - DOT_BOTTOM_GAP); // lama
-    return Math.max(0, vpH - top - indH - getDotBottomGap()); // CHANGED
+    return Math.max(0, vpH - top - indH - getDotBottomGap());
   }
 
   function computeDynamicRows() {
-    // Berapa baris muat → target 5
     const available = calcAvailableHeight();
-    const GAP = 6;               // lebih rapat supaya muat
+    const GAP = 6;
     const paddingTB = 0;
 
     let base = Math.floor((available - paddingTB + GAP) / (BASE_ROW_H_DESKTOP + GAP));
@@ -88,8 +91,8 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function cardsPerPageForMode() {
-    if (isScrollMode()) return projects.length || 1; // tablet/mobile = scroll
-    return computeDynamicRows();                      // desktop = dinamis (min 5)
+    if (isScrollMode()) return projects.length || 1;
+    return computeDynamicRows();
   }
 
   // ====== CARD HTML ======
@@ -105,7 +108,7 @@ document.addEventListener("DOMContentLoaded", function () {
         <div class="card">
           <div class="card-institusi">${project.institusi ?? ""}</div>
           <div class="card-proyek">${project.proyek ?? ""}</div>
-          <div class="card-pt"><span class="pt-badge">${project.pt ?? ""}</span></div>
+          <div class="card-pt">${renderPtBadge(project)}</div>
           <div class="card-pimpro">${project.pimpro ?? ""}</div>
 
           <div class="date-group-1">
@@ -151,7 +154,7 @@ document.addEventListener("DOMContentLoaded", function () {
           </div>
 
           <div class="card-proyek">${project.proyek ?? ""}</div>
-          <div class="card-pt"><span class="pt-badge">${project.pt ?? ""}</span></div>
+          <div class="card-pt">${renderPtBadge(project)}</div>
           <div class="card-pimpro">${project.pimpro ?? ""}</div>
 
           <div class="date-group-1">
@@ -192,7 +195,7 @@ document.addEventListener("DOMContentLoaded", function () {
         </div>
 
         <div class="card-proyek">${project.proyek ?? ""}</div>
-        <div class="card-pt"><span class="pt-badge">${project.pt ?? ""}</span></div>
+        <div class="card-pt">${renderPtBadge(project)}</div>
         <div class="card-pimpro">${project.pimpro ?? ""}</div>
 
         <div class="date-group-1">
@@ -373,7 +376,6 @@ document.addEventListener("DOMContentLoaded", function () {
     if (isAutoSliding) startAutoSlide(); else stopAutoSlide();
   }
 
-  // ===== Recalc / Rerender =====
   function recalcAndRerender(keepViewport = true) {
     const prevStartIndex = CARDS_PER_PAGE * currentPage;
 
@@ -400,7 +402,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // ===== Init =====
-  CARDS_PER_PAGE = cardsPerPageForMode();   // default 5 (desktop)
+  CARDS_PER_PAGE = cardsPerPageForMode();
   reflectModeClass();
   renderPages();
   showPage(0, true);
