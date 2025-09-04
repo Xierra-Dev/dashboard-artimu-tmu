@@ -45,7 +45,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const name      = r.name ?? r.people_name ?? "";
       const location  = r.location ?? r.destination_name ?? "";
       const requestBy = r.requestBy ?? r.request_by ?? "";
-      const leave     = r.leaveDate ?? r.leaving_date ?? r.leave ?? "";
+      const leave     = r.leaveDate ?? r.leave_date ?? r.leaving_date ?? r.leave ?? "";
       const back      = r.returnDate ?? r.return_date ?? r.return ?? "";
 
       const leaveFmt  = toDash(formatDateLikePHP(leave));

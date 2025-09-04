@@ -16,8 +16,8 @@ class VTripModel extends Model
         'vehicle_id',
         'people_id',
         'destination_id',
-        'leaveDate',
-        'returnDate',
+        'leave_date',
+        'return_date',
         'created_at',
         'updated_at',
         'deleted_at',
@@ -36,10 +36,10 @@ class VTripModel extends Model
                 v_trip.id,
                 people.name AS people_name,
                 destination.destination_name AS destination_name,
-                vehicle.numberPlate,
+                vehicle.number_plate,
                 vehicle.vehicle_name,
-                v_trip.leaveDate,
-                v_trip.returnDate
+                v_trip.leave_date,
+                v_trip.return_date
             ")
             ->join('people',      'people.id = v_trip.people_id')
             ->join('destination', 'destination.id = v_trip.destination_id')
@@ -73,8 +73,8 @@ class VTripModel extends Model
         $upper = $minute . ':59';
 
         return $this->baseJoined()
-            ->where('v_trip.leaveDate <=',  $upper)
-            ->where('v_trip.returnDate >=', $lower)
+            ->where('v_trip.leave_date <=',  $upper)
+            ->where('v_trip.return_date >=', $lower)
             ->orderBy('v_trip.id', 'ASC')
             ->get()->getResultArray();
     }
@@ -85,8 +85,8 @@ class VTripModel extends Model
         $endUpper   = date('Y-m-d H:i', strtotime($endMinute)) . ':59';
 
         return $this->baseJoined()
-            ->where('v_trip.leaveDate <=',  $endUpper)
-            ->where('v_trip.returnDate >=', $startLower)
+            ->where('v_trip.leave_date <=',  $endUpper)
+            ->where('v_trip.return_date >=', $startLower)
             ->orderBy('v_trip.id', 'ASC')
             ->get()->getResultArray();
     }

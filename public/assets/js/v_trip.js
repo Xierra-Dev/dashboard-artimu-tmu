@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const rawLocation    = r.location ?? r.destination_name ?? r.destination ?? "";
       const rawNumberPlate = r.numberPlate ?? r.number_plate ?? "";
       const rawVehicleName = r.vehicle_name ?? r.vehicle ?? "";
-      const rawLeave       = r.leaveDate ?? r.leaving_date ?? r.leave ?? "";
+      const rawLeave       = r.leaveDate ?? r.leave_date ?? r.leaving_date ?? r.leave ?? "";
       const rawReturn      = r.returnDate ?? r.return_date ?? r.return ?? "";
 
       const plateCombined = (() => {

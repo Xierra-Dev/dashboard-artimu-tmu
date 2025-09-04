@@ -16,9 +16,9 @@ class MLocModel extends Model
         'vehicle_id',
         'people_id',
         'destination_id',
-        'requestBy',
-        'leaveDate',
-        'returnDate',
+        'request_by',
+        'leave_date',
+        'return_date',
         'created_at',
         'updated_at',
         'deleted_at',
@@ -37,9 +37,9 @@ class MLocModel extends Model
                 m_loc.id,
                 people.name AS people_name,
                 destination.destination_name AS destination_name,
-                m_loc.requestBy,
-                m_loc.leaveDate,
-                m_loc.returnDate
+                m_loc.request_by,
+                m_loc.leave_date,
+                m_loc.return_date
             ")
             ->join('people',      'people.id = m_loc.people_id')
             ->join('destination', 'destination.id = m_loc.destination_id');
@@ -69,8 +69,8 @@ class MLocModel extends Model
         $upper  = $minute . ':59';
 
         return $this->baseJoined()
-            ->where('m_loc.leaveDate <=',  $upper)
-            ->where('m_loc.returnDate >=', $lower)
+            ->where('m_loc.leave_date <=',  $upper)
+            ->where('m_loc.return_date >=', $lower)
             ->orderBy('m_loc.id', 'ASC')
             ->get()->getResultArray();
     }
@@ -89,8 +89,8 @@ class MLocModel extends Model
         $endUpper   = $end->format('Y-m-d H:i')   . ':59';
 
         return $this->baseJoined()
-            ->where('m_loc.leaveDate <=',  $endUpper)
-            ->where('m_loc.returnDate >=', $startLower)
+            ->where('m_loc.leave_date <=',  $endUpper)
+            ->where('m_loc.return_date >=', $startLower)
             ->orderBy('m_loc.id', 'ASC')
             ->get()->getResultArray();
     }
