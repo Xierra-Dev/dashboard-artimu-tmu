@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", function () {
     return (rows || []).map((r) => {
       const rawName        = r.name ?? r.people_name ?? r.personel ?? "";
       const rawLocation    = r.location ?? r.destination_name ?? r.destination ?? "";
-      const rawNumberPlate = r.numberPlate ?? r.number_plate ?? "";
+      const rawNumberPlate = r.numberPlate ?? r.plate_number ?? "";
       const rawVehicleName = r.vehicle_name ?? r.vehicle ?? "";
       const rawLeave       = r.leaveDate ?? r.leave_date ?? r.leaving_date ?? r.leave ?? "";
       const rawReturn      = r.returnDate ?? r.return_date ?? r.return ?? "";

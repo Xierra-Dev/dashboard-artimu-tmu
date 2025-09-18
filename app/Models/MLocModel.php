@@ -42,7 +42,9 @@ class MLocModel extends Model
                 m_loc.return_date
             ")
             ->join('people',      'people.id = m_loc.people_id')
-            ->join('destination', 'destination.id = m_loc.destination_id');
+            ->join('destination', 'destination.id = m_loc.destination_id')
+            ->where('people.deleted_at IS NULL')
+            ->where('destination.deleted_at IS NULL');
     }
 
     public function getAll(): array

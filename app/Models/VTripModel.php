@@ -36,7 +36,7 @@ class VTripModel extends Model
                 v_trip.id,
                 people.name AS people_name,
                 destination.destination_name AS destination_name,
-                vehicle.number_plate,
+                vehicle.plate_number,
                 vehicle.vehicle_name,
                 v_trip.leave_date,
                 v_trip.return_date
