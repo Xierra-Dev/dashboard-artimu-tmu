@@ -6,7 +6,6 @@ use CodeIgniter\Model;
 
 class MLocModel extends Model
 {
-    // >> PERUBAHAN: arahkan ke koneksi wru
     protected $DBGroup   = 'wru';
 
     protected $table      = 'm_loc';
@@ -19,6 +18,7 @@ class MLocModel extends Model
         'request_by',
         'leave_date',
         'return_date',
+        'letter',        // kolom flag surat
         'created_at',
         'updated_at',
         'deleted_at',
@@ -32,15 +32,17 @@ class MLocModel extends Model
 
     private function baseJoined()
     {
+        // PAKAI ARRAY -> aman dari salah ketik komentar dalam string
         return $this->builder()
-            ->select("
-                m_loc.id,
-                people.name AS people_name,
-                destination.destination_name AS destination_name,
-                m_loc.request_by,
-                m_loc.leave_date,
-                m_loc.return_date
-            ")
+            ->select([
+                'm_loc.id',
+                'people.name AS people_name',
+                'destination.destination_name AS destination_name',
+                'm_loc.request_by',
+                'm_loc.leave_date',
+                'm_loc.return_date',
+                'm_loc.letter',
+            ])
             ->join('people',      'people.id = m_loc.people_id')
             ->join('destination', 'destination.id = m_loc.destination_id')
             ->where('people.deleted_at IS NULL')
@@ -51,7 +53,8 @@ class MLocModel extends Model
     {
         return $this->baseJoined()
             ->orderBy('m_loc.id', 'ASC')
-            ->get()->getResultArray();
+            ->get()
+            ->getResultArray();
     }
 
     public function getOngoingMinute(?string $nowMinute = null, ?string $tz = null): array
@@ -74,7 +77,8 @@ class MLocModel extends Model
             ->where('m_loc.leave_date <=',  $upper)
             ->where('m_loc.return_date >=', $lower)
             ->orderBy('m_loc.id', 'ASC')
-            ->get()->getResultArray();
+            ->get()
+            ->getResultArray();
     }
 
     public function getIntersectingMinute(string $startMinute, string $endMinute, ?string $tz = null): array
@@ -94,6 +98,7 @@ class MLocModel extends Model
             ->where('m_loc.leave_date <=',  $endUpper)
             ->where('m_loc.return_date >=', $startLower)
             ->orderBy('m_loc.id', 'ASC')
-            ->get()->getResultArray();
+            ->get()
+            ->getResultArray();
     }
 }

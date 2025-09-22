@@ -114,13 +114,13 @@ video {
   align-items: center;
   flex: 0 0 150px;
   max-width: 150px;
-  height: 64px;                   /* kompakan */
+  height: 64px;
   margin-right: 10px;
   padding-right: 10px;
   font-weight: 700;
-  font-size: 14px;                /* kompakan */
+  font-size: 14px;
   color: #fff;
-  border-right: 2px solid rgba(255, 255, 255, 0.75); /* kompakan */
+  border-right: 2px solid rgba(255, 255, 255, 0.75);
   overflow: hidden;
 }
 
@@ -148,7 +148,7 @@ video {
 
 .location {
   font-size: 13px;
-  font-weight: 700;               /* kompakan */
+  font-weight: 700;
   line-height: 1.2;
   max-height: calc(1.4em * 2);
   display: -webkit-box;
@@ -199,17 +199,8 @@ video {
   font-weight: 700;
 }
 
-.date-label.leave {
-  font-size: 10px;
-  font-weight: bold;
-  color: #ffffff;
-}
-
-.date-label.return {
-  font-size: 10px;
-  font-weight: bold;
-  color: #ffffff;
-}
+.date-label.leave { font-size: 10px; color: #ffffff; }
+.date-label.return{ font-size: 10px; color: #ffffff; }
 
 .date-label span {
   margin-top: 2px;
@@ -220,13 +211,8 @@ video {
   white-space: nowrap;
 }
 
-.leave span {
-  background: #c0392b;
-}
-
-.return span {
-  background: #27ae60;
-}
+.leave span  { background: #c0392b; }
+.return span { background: #27ae60; }
 
 /* ===== Page indicators ===== */
 .page-indicators {
@@ -260,12 +246,61 @@ video {
   transform: scale(1.08);
 }
 
+/* ========================================================= */
+/* === PERUBAHAN: Corner badge (seperempat lingkaran) ====== */
+/* Elemen HTML: 
+   <div class="card-corner">
+     <span class="corner-blob"></span>
+     <span class="corner-icon">✉️</span>
+   </div>
+*/
+.card-corner {
+  position: absolute;
+  top: 0;
+  width: 36px;   /* area klik nonaktif, hanya dekorasi */
+  height: 36px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.corner-blob {
+  position: absolute;
+  width: 70px;  /* lebih besar dari container supaya jadi seperempat lingkaran */
+  height: 70px;
+  background: radial-gradient(ellipse at center, #27ae60 100%);
+  box-shadow: 0 2px 8px rgba(0,0,0,.25) inset, 0 2px 6px rgba(0,0,0,.25);
+  opacity: .95;
+}
+
+.corner-icon {
+  position: absolute;
+  font-size: 19px;
+  font-weight: 500;
+  color: #fff;
+  rotate: 0deg;
+}
+
+/* Desktop ≥1400px: pojok KIRI-ATAS */
+@media (min-width: 1400px) {
+  .card-corner       { left: 0; }
+  .corner-blob       { top: -32px; left: -32px; border-radius: 0 0 100% 0; }
+   .corner-icon {
+    top: -2.5px;    /* semula 8px -> lebih ke atas */
+    left: 2.5px;  /* semula 8px -> lebih ke kanan */
+  }
+}
+
+/* <1400px: pojok KANAN-ATAS */
+@media (max-width: 1399px) {
+  .card-corner       { right: 0; }
+  .corner-blob       { top: -32px; right: -32px; border-radius: 0 0 0 100%; }
+  .corner-icon       { top: -2.5px; right: 1.5px; }
+}
+/* ========================================================= */
+
 /* ===== Desktop (≥1400px) ===== */
 @media (min-width: 1400px) {
-  html,
-  body {
-    overflow: hidden;
-  }
+  html, body { overflow: hidden; }
 
   .content-wrapper {
     max-width: calc(100% - 90px);
@@ -279,15 +314,15 @@ video {
     height: 100%;
     padding: 10px 0;
     flex-shrink: 0;
-    overflow: hidden; /* jaga halaman lain tidak terlihat */
+    overflow: hidden;
   }
 
   .page-inner {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    grid-auto-rows: 92px;         /* tinggi row */
+    grid-auto-rows: 92px;
     column-gap: 12px;
-    row-gap: 10px;                /* jarak antar kartu */
+    row-gap: 10px;
     width: 100%;
     align-content: start;
     justify-items: stretch;
@@ -297,478 +332,134 @@ video {
     background-color: var(--bg-light);
     color: var(--fg-light);
   }
-  /* KIRI: item 3,7,11,... (baris genap kiri) */
   .page-inner .card-container:nth-child(4n+3) .card {
     background-color: var(--bg-dark);
     color: var(--fg-dark);
   }
-
-  /* KANAN: item 2,6,10,... (baris ganjil kanan) */
   .page-inner .card-container:nth-child(4n+2) .card {
     background-color: var(--bg-dark);
     color: var(--fg-dark);
   }
-  /* KANAN: item 4,8,12,... (baris genap kanan) */
   .page-inner .card-container:nth-child(4n+4) .card {
     background-color: var(--bg-light);
     color: var(--fg-light);
   }
 
-  .card-pages {
-    height: 100%;
-    align-content: center !important;
-  }
-
-  .card-left {
-    flex: 0 0 150px;
-    max-width: 150px;
-  }
-
-  .card-right {
-    flex: 0 0 96px;
-    max-width: 96px;
-  }
+  .card-pages { height: 100%; align-content: center !important; }
+  .card-left  { flex: 0 0 150px; max-width: 150px; }
+  .card-right { flex: 0 0 96px;  max-width: 96px;  }
 }
 
 /* ===== Tablet landscape: 769–1399px ===== */
 @media screen and (max-width: 1399px) and (min-width: 769px) {
-  html,
-  body {
-    overflow-y: auto;
-    overflow-x: hidden;
-    height: auto;
-    min-height: 100vh;
-  }
+  html, body { overflow-y: auto; overflow-x: hidden; height: auto; min-height: 100vh; }
 
-  .main-container {
-    height: auto;
-    min-height: 100vh;
-    padding: 0 15px;
-    max-width: 100vw;
-    box-sizing: border-box;
-    overflow-x: hidden;
-  }
+  .main-container { height: auto; min-height: 100vh; padding: 0 15px; max-width: 100vw; box-sizing: border-box; overflow-x: hidden; }
 
-  .left-hover-area,
-  .right-hover-area {
-    display: none;
-  }
+  .left-hover-area, .right-hover-area { display: none; }
+  .page-indicators { display: none; }
 
-  .page-indicators {
-    display: none;
-  }
-  .card-left,
-  .card-right {
-    flex: 0 0 auto !important; /* hapus 150px/96px jadi tidak menentukan tinggi */
+  .card-left, .card-right {
+    flex: 0 0 auto !important;
     flex-basis: auto !important;
     height: auto !important;
     max-width: 100%;
   }
 
   .content-wrapper {
-    width: 100%;
-    max-width: 100%;
-    height: auto;
-    max-height: none;
-    margin-top: 20px;
-    padding-bottom: var(--card-gap); /* disamakan dengan antar kartu */
-    box-sizing: border-box;
-    overflow-x: hidden;
+    width: 100%; max-width: 100%; height: auto; max-height: none;
+    margin-top: 20px; padding-bottom: var(--card-gap); box-sizing: border-box; overflow-x: hidden;
   }
 
-  .card-pages {
-    position: static;
-    display: block;
-    width: 100%;
-    max-width: 100%;
-    height: auto;
-    transform: none;
-    transition: none;
-    box-sizing: border-box;
-    overflow-x: hidden;
-  }
-
-  .page {
-    display: block;
-    width: 100%;
-    max-width: 100%;
-    min-width: auto;
-    height: auto;
-    margin-bottom: 0;
-    padding: 0;
-    box-sizing: border-box;
-    overflow-x: hidden;
-  }
-
-  .page-inner {
-    display: block;
-    width: 100%;
-  }
-
-  .card-container {
-    width: 100%;
-    max-width: 100%;
-    min-width: auto;
-    margin-bottom: var(--card-gap); /* jarak antar kartu konsisten */
-    box-sizing: border-box;
-    overflow-x: hidden;
-  }
-
-  .card-container:last-child {
-    margin-bottom: 0; /* kartu terakhir tanpa jarak ekstra */
-  }
+  .card-pages { position: static; display: block; width: 100%; max-width: 100%; height: auto; transform: none; transition: none; box-sizing: border-box; overflow-x: hidden; }
+  .page       { display: block; width: 100%; max-width: 100%; min-width: auto; height: auto; margin-bottom: 0; padding: 0; box-sizing: border-box; overflow-x: hidden; }
+  .page-inner { display: block; width: 100%; }
+  .card-container { width: 100%; max-width: 100%; min-width: auto; margin-bottom: var(--card-gap); box-sizing: border-box; overflow-x: hidden; }
+  .card-container:last-child { margin-bottom: 0; }
 
   .card {
-    width: 100%;
-    max-width: 100%;
-    height: auto;
-    min-height: 120px;
-    margin: 0 35px 0 35px;
-    padding: 15px;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch; 
-    gap: 12px;
-    box-sizing: border-box;
-    overflow: hidden;
+    width: 100%; max-width: 100%; height: auto; min-height: 120px;
+    margin: 0 35px; padding: 15px; display: flex; flex-direction: column; align-items: stretch; gap: 12px; box-sizing: border-box; overflow: hidden;
   }
 
   .card-left {
-    width: 100%;
-    max-width: 100%;
-    margin: 0 0 10px 0;
-    padding: 0 0 10px 0;
-    border-right: none;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.86);
-    text-align: center;
-    font-size: 16px;
-    box-sizing: border-box;
-    overflow: hidden;
+    width: 100%; max-width: 100%; margin: 0 0 10px 0; padding: 0 0 10px 0;
+    border-right: none; border-bottom: 2px solid rgba(255, 255, 255, 0.86);
+    text-align: center; font-size: 16px; box-sizing: border-box; overflow: hidden;
   }
 
-  .card-middle,
-  .card-right {
-    width: 100%;
-    max-width: 100%;
-    align-items: center;
-    text-align: center;
-    box-sizing: border-box;
-    overflow: hidden;
-  }
+  .card-middle, .card-right { width: 100%; max-width: 100%; align-items: center; text-align: center; box-sizing: border-box; overflow: hidden; }
 
-  .dates {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    gap: 8px;
-    width: 100%;
-  }
+  .dates { display: flex; flex-direction: row; justify-content: space-between; gap: 8px; width: 100%; }
+  .date-label { flex: 1; width: 48%; }
+  .date-label span { display: block; width: 100%; min-width: auto; padding: 6px 4px; font-size: 10px; text-align: center; }
 
-  .date-label {
-    flex: 1;
-    width: 48%;
-  }
+  .location { font-size: 16px; line-height: 1.25; max-height: calc(1.25em * 2); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; white-space: normal; overflow: hidden; text-overflow: ellipsis; overflow-wrap: anywhere; }
+  .request  { font-size: 14px; white-space: normal; overflow: visible; text-overflow: unset; }
 
-  .date-label span {
-    display: block;
-    width: 100%;
-    min-width: auto;
-    padding: 6px 4px;
-    font-size: 10px;
-    text-align: center;
-  }
-
-  .location {
-    font-size: 16px;
-    line-height: 1.25;
-    max-height: calc(1.25em * 2);
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-            line-clamp: 2;
-    white-space: normal;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    overflow-wrap: anywhere;
-  }
-
-  .request {
-    font-size: 14px;
-    white-space: normal;
-    overflow: visible;
-    text-overflow: unset;
-  }
-
-  #playPauseBtn {
-    display: none !important;
-  }
+  #playPauseBtn { display: none !important; }
 }
 
 /* ===== Mobile ≤768px ===== */
 @media (max-width: 768px) {
-  html,
-  body {
-    overflow-y: auto;
-    overflow-x: hidden;
-    height: auto;
-    min-height: 100vh;
-  }
+  html, body { overflow-y: auto; overflow-x: hidden; height: auto; min-height: 100vh; }
 
-  .main-container {
-    height: auto;
-    min-height: 100vh;
-    padding: 0 15px;
-    max-width: 100vw;
-    box-sizing: border-box;
-    overflow-x: hidden;
-  }
+  .main-container { height: auto; min-height: 100vh; padding: 0 15px; max-width: 100vw; box-sizing: border-box; overflow-x: hidden; }
+  .left-hover-area, .right-hover-area { display: none; }
+  .page-indicators { display: none; }
 
-  .left-hover-area,
-  .right-hover-area {
-    display: none;
-  }
+  .content-wrapper { width: 100%; max-width: 100%; height: auto; max-height: none; margin-top: 20px; padding-bottom: var(--card-gap); box-sizing: border-box; overflow-x: hidden; }
+  .card-pages { position: static; display: block; width: 100%; max-width: 100%; height: auto; transform: none; transition: none; box-sizing: border-box; overflow-x: hidden; }
 
-  .page-indicators {
-    display: none;
-  }
+  .page { display: block; width: 100%; max-width: 100%; min-width: auto; height: auto; margin-bottom: 0; padding: 0; box-sizing: border-box; overflow-x: hidden; }
+  .page-inner { display: block; width: 100%; }
 
-  .content-wrapper {
-    width: 100%;
-    max-width: 100%;
-    height: auto;
-    max-height: none;
-    margin-top: 20px;
-    padding-bottom: var(--card-gap); /* konsisten */
-    box-sizing: border-box;
-    overflow-x: hidden;
-  }
-
-  .card-pages {
-    position: static;
-    display: block;
-    width: 100%;
-    max-width: 100%;
-    height: auto;
-    transform: none;
-    transition: none;
-    box-sizing: border-box;
-    overflow-x: hidden;
-  }
-
-  .page {
-    display: block;
-    width: 100%;
-    max-width: 100%;
-    min-width: auto;
-    height: auto;
-    margin-bottom: 0;
-    padding: 0;
-    box-sizing: border-box;
-    overflow-x: hidden;
-  }
-
-  .card-container {
-    width: 100%;
-    max-width: 100%;
-    min-width: auto;
-    margin-bottom: var(--card-gap);
-    box-sizing: border-box;
-    overflow-x: hidden;
-  }
-
-  .card-container:last-child {
-    margin-bottom: 0;
-  }
+  .card-container { width: 100%; max-width: 100%; min-width: auto; margin-bottom: var(--card-gap); box-sizing: border-box; overflow-x: hidden; }
+  .card-container:last-child { margin-bottom: 0; }
 
   .card {
-    width: 100%;
-    max-width: 100%;
-    height: auto;
-    min-height: 120px;
-    margin: 0 20px 0 20px;
-    padding: 15px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    box-sizing: border-box;
-    overflow: hidden;
-    align-items: stretch;
+    width: 100%; max-width: 100%; height: auto; min-height: 120px; margin: 0 20px;
+    padding: 15px; display: flex; flex-direction: column; gap: 12px; box-sizing: border-box; overflow: hidden; align-items: stretch;
   }
 
   .card-left {
-    width: 100%;
-    max-width: 100%;
-    height: auto;
-    margin: 0 0 10px 0;
-    padding: 0 0 10px 0;
-    border-right: none;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.86);
-    text-align: center;
-    font-size: 16px;
-    box-sizing: border-box;
-    overflow: hidden;
+    width: 100%; max-width: 100%; height: auto; margin: 0 0 10px 0; padding: 0 0 10px 0;
+    border-right: none; border-bottom: 2px solid rgba(255, 255, 255, 0.86);
+    text-align: center; font-size: 16px; box-sizing: border-box; overflow: hidden;
   }
 
-  .card-left, .card-right {
-    flex: 0 0 auto !important;
-    flex-basis: auto !important;
-    height: auto !important;
-  }
+  .card-left, .card-right { flex: 0 0 auto !important; flex-basis: auto !important; height: auto !important; }
+  .card-middle, .card-right { width: 100%; max-width: 100%; align-items: center; text-align: center; box-sizing: border-box; overflow: hidden; }
 
-  .card-middle,
-  .card-right {
-    width: 100%;
-    max-width: 100%;
-    align-items: center;
-    text-align: center;
-    box-sizing: border-box;
-    overflow: hidden;
-  }
+  .dates { display: flex; flex-direction: row; justify-content: space-between; gap: 8px; width: 100%; }
+  .date-label { flex: 1; width: 48%; }
+  .date-label span { display: block; width: 100%; min-width: auto; padding: 6px 4px; font-size: 10px; text-align: center; }
 
-  .dates {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    gap: 8px;
-    width: 100%;
-  }
+  .location { font-size: 16px; line-height: 1.25; max-height: calc(1.25em * 2); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; white-space: normal; overflow: hidden; text-overflow: ellipsis; overflow-wrap: anywhere; }
+  .request  { font-size: 14px; white-space: normal; overflow: visible; text-overflow: unset; }
 
-  .date-label {
-    flex: 1;
-    width: 48%;
-  }
-
-  .date-label span {
-    display: block;
-    width: 100%;
-    min-width: auto;
-    padding: 6px 4px;
-    font-size: 10px;
-    text-align: center;
-  }
-
-  .location {
-    font-size: 16px;
-    line-height: 1.25;
-    max-height: calc(1.25em * 2);
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-            line-clamp: 2;
-    white-space: normal;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    overflow-wrap: anywhere;
-  }
-
-  .request {
-    font-size: 14px;
-    white-space: normal;
-    overflow: visible;
-    text-overflow: unset;
-  }
-
-  #playPauseBtn {
-    display: none !important;
-  }
+  #playPauseBtn { display: none !important; }
 }
 
 /* ===== Mobile kecil ≤480px ===== */
 @media (max-width: 480px) {
-  .main-container {
-    padding: 0 10px;
-    max-width: 100vw;
-    box-sizing: border-box;
-    overflow-x: hidden;
-  }
+  .main-container { padding: 0 10px; max-width: 100vw; box-sizing: border-box; overflow-x: hidden; }
+  .content-wrapper { width: 100%; max-width: 100%; margin-top: 10px; margin-left: 0; margin-right: 0; padding-bottom: var(--card-gap); box-sizing: border-box; overflow-x: hidden; }
 
-  .content-wrapper {
-    width: 100%;
-    max-width: 100%;
-    margin-top: 10px;
-    margin-left: 0;
-    margin-right: 0;
-    padding-bottom: var(--card-gap);
-    box-sizing: border-box;
-    overflow-x: hidden;
-  }
+  .card-pages, .page, .card-container { width: 100%; max-width: 100%; box-sizing: border-box; overflow-x: hidden; }
 
-  .card-pages,
-  .page,
-  .card-container {
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
-    overflow-x: hidden;
-  }
+  .card { width: 100%; max-width: 100%; min-height: 110px; padding: 12px; display: flex; flex-direction: column; gap: 10px; box-sizing: border-box; overflow: hidden; align-items: stretch; }
 
-  .card {
-    width: 100%;
-    max-width: 100%;
-    min-height: 110px;
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    box-sizing: border-box;
-    overflow: hidden;
-    align-items: stretch;
-  }
+  .card-left { width: 100%; max-width: 100%; padding-bottom: 8px; margin-bottom: 8px; font-size: 14px; box-sizing: border-box; overflow: hidden; }
 
-  .card-left {
-    width: 100%;
-    max-width: 100%;
-    padding-bottom: 8px;
-    margin-bottom: 8px;
-    font-size: 14px;
-    box-sizing: border-box;
-    overflow: hidden;
-  }
+  .card-left, .card-right { flex: 0 0 auto !important; flex-basis: auto !important; height: auto !important; }
 
-  .card-left, .card-right {
-    flex: 0 0 auto !important;
-    flex-basis: auto !important;
-    height: auto !important;
-  }
+  .location { font-size: 14px; line-height: 1.25; max-height: calc(1.25em * 2); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; white-space: normal; overflow: hidden; text-overflow: ellipsis; overflow-wrap: anywhere; }
+  .request  { font-size: 12px; }
+  .date-label { font-size: 10px; }
+  .date-label span { font-size: 9px; padding: 3px 6px; }
+  .dates { gap: 6px; }
 
-  .location {
-    font-size: 14px;
-    line-height: 1.25;
-    max-height: calc(1.25em * 2);
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-            line-clamp: 2;
-    white-space: normal;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    overflow-wrap: anywhere;
-  }
-
-  .request {
-    font-size: 12px;
-  }
-
-  .date-label {
-    font-size: 10px;
-  }
-
-  .date-label span {
-    font-size: 9px;
-    padding: 3px 6px;
-  }
-
-  .dates {
-    gap: 6px;
-  }
-
-  .card-container {
-    margin-bottom: var(--card-gap);
-  }
-
-  .card-container:last-child {
-    margin-bottom: 0;
-  }
+  .card-container { margin-bottom: var(--card-gap); }
+  .card-container:last-child { margin-bottom: 0; }
 }
-
-

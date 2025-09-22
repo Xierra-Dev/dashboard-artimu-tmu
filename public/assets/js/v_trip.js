@@ -250,9 +250,19 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // ===== Auto slide =====
-  function updatePlayPauseIcon() {
-    if (playPauseButton) playPauseButton.textContent = isAutoSliding ? "⏸" : "▶";
+  function updatePlayPauseVisibility() {
+    if (!playPauseButton) return;
+    playPauseButton.style.display = (window.innerWidth <= 1399) ? "none" : "";
   }
+
+// panggil saat init & reflow
+  updatePlayPauseVisibility();
+  window.addEventListener("resize", updatePlayPauseVisibility);
+  function updatePlayPauseIcon() {
+    if (!playPauseButton) return;
+    playPauseButton.textContent = isAutoSliding ? "⏸" : "▶";
+  }
+
   function startAutoSlide() {
     if (!isAutoSlideAllowed()) return;
     stopAutoSlide();
@@ -272,57 +282,29 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // ===== Card template =====
-  function createCardHTML(project) {
-    const w = window.innerWidth;
-    const isTablet = w <= 1399 && w >= 769;
+  // ===== Card template =====
+function createCardHTML(project) {
+  const w = window.innerWidth;
+  const isTablet = w <= 1399 && w >= 769;
 
-    if (isTablet) {
-      return `
-        <div class="card-container">
-          <div class="card">
-            <div class="card-left">
-              <div class="plate">${project.plate}</div>
-              <div class="name">${project.name}</div>
-            </div>
-            <div class="card-middle">
-              <div class="location">${project.location}</div>
-            </div>
-            <div class="card-right">
-              <div class="request">
-                <div class="request-label">Used By</div>
-                <div class="request-value">${project.name}</div>
-              </div>
-              <div class="dates">
-                <div class="date-group-from">
-                  <div class="date-title-from">From</div>
-                  <div class="date-value leave">${project.leaveDate}</div>
-                </div>
-                <div class="date-group-return">
-                  <div class="date-title-return">Return</div>
-                  <div class="date-value return">${project.returnDate}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>`;
-    }
-
-    // Desktop (>=1400px): numberPlate (atas), vehicle_name (bawah)
+  if (isTablet) {
+    // TABLET (769–1399): HILANGKAN NAMA DI KANAN ATAS HEADER,
+    // tapi TETAP tampilkan chip "Used By" oranye di area kanan bawah.
     return `
       <div class="card-container">
         <div class="card">
           <div class="card-left">
-            <div class="plate">${project.numberPlate}</div>
-            <div class="name">${project.vehicleName}</div>
+            <div class="plate">${project.plate}</div>
+            <!-- nama di header DIHAPUS agar tidak muncul di kanan atas -->
           </div>
           <div class="card-middle">
             <div class="location">${project.location}</div>
+          </div>
+          <div class="card-right">
             <div class="request">
               <div class="request-label">Used By</div>
               <div class="request-value">${project.name}</div>
             </div>
-          </div>
-          <div class="card-right">
             <div class="dates">
               <div class="date-group-from">
                 <div class="date-title-from">From</div>
@@ -337,6 +319,71 @@ document.addEventListener("DOMContentLoaded", function () {
         </div>
       </div>`;
   }
+
+  if (w <= 768) {
+    // MOBILE (≤768 termasuk ≤480): gunakan gabungan "plate_number - vehicle_name"
+    // lewat project.plate, dan chip Used By tetap ada.
+    return `
+      <div class="card-container">
+        <div class="card">
+          <div class="card-left">
+            <div class="plate">${project.plate}</div>
+            <!-- tidak menaruh nama di header; nama ada di chip -->
+          </div>
+          <div class="card-middle">
+            <div class="location">${project.location}</div>
+          </div>
+          <div class="card-right">
+            <div class="request">
+              <div class="request-label">Used By</div>
+              <div class="request-value">${project.name}</div>
+            </div>
+            <div class="dates">
+              <div class="date-group-from">
+                <div class="date-title-from">From</div>
+                <div class="date-value leave">${project.leaveDate}</div>
+              </div>
+              <div class="date-group-return">
+                <div class="date-title-return">Return</div>
+                <div class="date-value return">${project.returnDate}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  // DESKTOP (≥1400): tetap seperti sebelumnya
+  return `
+    <div class="card-container">
+      <div class="card">
+        <div class="card-left">
+          <div class="plate">${project.numberPlate}</div>
+          <div class="name">${project.vehicleName}</div>
+        </div>
+        <div class="card-middle">
+          <div class="location">${project.location}</div>
+          <div class="request">
+            <div class="request-label">Used By</div>
+            <div class="request-value">${project.name}</div>
+          </div>
+        </div>
+        <div class="card-right">
+          <div class="dates">
+            <div class="date-group-from">
+              <div class="date-title-from">From</div>
+              <div class="date-value leave">${project.leaveDate}</div>
+            </div>
+            <div class="date-group-return">
+              <div class="date-title-return">Return</div>
+              <div class="date-value return">${project.returnDate}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
 
   // ===== Render & paging =====
   function generatePages() {

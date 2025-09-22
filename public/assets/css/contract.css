@@ -271,6 +271,7 @@ html, body {
     border-radius: 6px;
     -webkit-line-clamp: 2;
     letter-spacing: .6pt;
+    font-weight: bold;
   }
   .status-value {
     display: flex; align-items: center; justify-content: center; text-align: center;

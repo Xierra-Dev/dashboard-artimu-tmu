@@ -38,8 +38,13 @@ document.addEventListener("DOMContentLoaded", function () {
     return onlyDate;
   }
 
+  // konversi field letter menjadi boolean
+  function toBoolLetter(v) {
+    const s = String(v ?? "").trim().toLowerCase();
+    return s === "1" || s === "true" || s === "yes" || s === "y";
+  }
+
   // Normalisasi baris dari model → shape untuk kartu
-  // (semua field melalui toDash() supaya kosong → "-")
   function normalizeRows(rows) {
     return (rows || []).map((r) => {
       const name      = r.name ?? r.people_name ?? "";
@@ -47,6 +52,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const requestBy = r.requestBy ?? r.request_by ?? "";
       const leave     = r.leaveDate ?? r.leave_date ?? r.leaving_date ?? r.leave ?? "";
       const back      = r.returnDate ?? r.return_date ?? r.return ?? "";
+      const letter    = r.letter ?? r.hasLetter ?? r.flag ?? null;
 
       const leaveFmt  = toDash(formatDateLikePHP(leave));
       const backFmt   = toDash(formatDateLikePHP(back));
@@ -57,6 +63,7 @@ document.addEventListener("DOMContentLoaded", function () {
         requestBy:  escapeHtml(toDash(requestBy)),
         leaveDate:  escapeHtml(leaveFmt),
         returnDate: escapeHtml(backFmt),
+        hasLetter:  toBoolLetter(letter),
       };
     });
   }
@@ -64,7 +71,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // 1) render awal pakai data dari controller (window.PROJECTS)
   projects = normalizeRows(Array.isArray(window.PROJECTS) ? window.PROJECTS : []);
 
-  // 2) opsional: ambil dari endpoint JSON → selalu refresh konten (JS-only change)
+  // 2) opsional: ambil dari endpoint JSON → selalu refresh konten
   (function refreshFromAPI() {
     const candidates = ["/mloc/list", "/mloc/json", "/api/mloc", "/mloc/data"];
     (async () => {
@@ -82,13 +89,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
           const fresh = normalizeRows(rows);
 
-          // Selalu terapkan hasil terbaru agar "-" ikut konsisten
           projects = fresh;
           const keepPage = Math.min(currentPage, Math.max(0, Math.ceil(projects.length / Math.max(lastPerPage, 1)) - 1));
           renderPages(isDesktopWidth() ? computeCardsPerPage() : projects.length);
           showPage(keepPage);
-          break; // stop di kandidat pertama yang valid
-        } catch (_) { /* lanjut kandidat berikutnya */ }
+          break;
+        } catch (_) { /* coba kandidat berikutnya */ }
       }
     })();
   })();
@@ -104,7 +110,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const MIN_PER_PAGE = 10;
   const EPSILON_PX   = 1;
 
-  // Tambahkan 10px buffer supaya border/radius terlihat
   const EXTRA_HEIGHT_BUFFER = 10;
 
   /* ---------- Elemen ---------- */
@@ -116,7 +121,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const pageIndicatorsContainer = document.getElementById("pageIndicators");
   const leftArrow               = document.getElementById("leftArrow");
   const rightArrow              = document.getElementById("rightArrow");
-  const navbarEl                = document.querySelector(".top-bar"); // <-- DITAMBAHKAN: deteksi area navbar
+  const navbarEl                = document.querySelector(".top-bar");
 
   /* ---------- State ---------- */
   let currentPage       = 0;
@@ -134,11 +139,20 @@ document.addEventListener("DOMContentLoaded", function () {
     if (playPauseButton) playPauseButton.textContent = isAutoSliding ? "⏸" : "▶";
   }
 
+  // ==== RENDER CARD ====
+  // Corner badge (seperempat lingkaran) hanya muncul jika hasLetter = true
   function createCardHTML(p) {
-    // p sudah disanitasi & sudah ke "-"
+    const corner = p.hasLetter
+      ? `<div class="card-corner" aria-label="Has letter">
+           <span class="corner-blob"></span>
+           <span class="corner-icon" aria-hidden="true">🗎</span>
+         </div>`
+      : "";
+
     return `
       <div class="card-container">
         <div class="card">
+          ${corner}
           <div class="card-left">${p.name}</div>
           <div class="card-middle">
             <div class="location">${p.location}</div>
@@ -199,7 +213,6 @@ document.addEventListener("DOMContentLoaded", function () {
     return { rowGap, padV, cardH, paddings, borders };
   }
 
-  // Terapkan batas tinggi hanya pada desktop
   function capContentWrapperByIndicators() {
     if (!contentWrapper || !pageIndicatorsContainer) return;
 
@@ -218,7 +231,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const minInnerForRows = (cardH * MIN_ROWS) + rowGap * (MIN_ROWS - 1);
     const minOuterForRows = Math.ceil(minInnerForRows + paddings + borders);
 
-    // buffer 10px agar tinggi final sedikit lebih longgar
     const baseMax  = Math.max(Math.max(target, 200), minOuterForRows);
     const finalMax = baseMax + EXTRA_HEIGHT_BUFFER;
 
@@ -228,7 +240,6 @@ document.addEventListener("DOMContentLoaded", function () {
     cardPagesContainer.style.height = inner + "px";
   }
 
-  // Non-desktop: padding halaman 0
   function alignPagesCenter() {
     if (!cardPagesContainer) return;
     document.querySelectorAll(".page").forEach((p) => {
@@ -242,7 +253,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Desktop: hitung kapasitas halaman
   function computeCardsPerPage() {
     const h = cardPagesContainer.clientHeight ||
               cardPagesContainer.getBoundingClientRect().height;
@@ -251,8 +261,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const usable = Math.max(0, h - padV);
     const rows   = Math.max(
       MIN_ROWS,
-      Math.floor((usable + rowGap + EPSILON_PX) / (cardH + rowGap))
-    );
+      Math.floor((usable + rowGap + EPSILON_PX) / (cardH + rowGap)
+    ));
     return Math.max(MIN_PER_PAGE, rows * 2); // 2 kolom
   }
 
@@ -443,7 +453,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const insideNavbar =
       (navbarEl && navbarEl.contains(e.target)) || false;
 
-    // Tambahan jaga-jaga bila ada elemen menu lain
     const insideMenu =
       (menuButton && menuButton.contains(e.target)) ||
       (menuDropdown && menuDropdown.contains(e.target)) ||

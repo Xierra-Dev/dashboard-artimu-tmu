@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const BP = { DESKTOP_MIN: 1400, TABLET_MIN: 769, MOBILE_STD_MIN: 480 };
 
   // ===== Desktop layout defaults =====
-  const DESK_COLS = 5, DESK_CARD_W = 220, DESK_CARD_H = 210, DESK_COL_GAP = 12, DESK_ROW_GAP = 28;
+  const DESK_COLS = 5, DESK_CARD_W = 195, DESK_CARD_H = 180, DESK_COL_GAP = 12, DESK_ROW_GAP = 12;
 
   const INDICATOR_GAP_PX = 12;
   const SLIDE_INTERVAL = 10000;
@@ -17,12 +17,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const pageIndicatorsContainer = document.getElementById("pageIndicators");
   const leftArrow = document.getElementById("leftArrow");
   const rightArrow = document.getElementById("rightArrow");
-  const navbar = document.querySelector(".top-bar");
 
   // State
   let currentPage = 0, autoSlideInterval = null, isAutoSliding = true, totalPages = 1, isDesktopMode = false;
 
-  // Helper: ubah nilai kosong/null/whitespace menjadi "-"
+  // Vertikal scaling state
+  let lastAvailableH = 0;
+  let lastRows = 2;
+
+  // Helper
   const asDash = (v) => {
     const s = (v ?? "").toString().trim();
     return s.length ? s : "-";
@@ -34,11 +37,10 @@ document.addEventListener("DOMContentLoaded", () => {
     return Math.max(0, Math.min(100, n));
   };
 
-  // Warna progress (gradasi merah→hijau)
   function mixedColor(pct) {
     const t = clampProgress(pct) / 100;
-    const red = { r: 220, g: 53,  b: 69 };
-    const grn = { r: 40,  g: 167, b: 69 };
+    const red = { r: 255, g: 0,  b: 0 };
+    const grn = { r: 34,  g: 255, b: 96 };
     const lerp = (a, b, t2) => Math.round(a + (b - a) * t2);
     return `rgb(${lerp(red.r, grn.r, t)}, ${lerp(red.g, grn.g, t)}, ${lerp(red.b, grn.b, t)})`;
   }
@@ -46,17 +48,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const getModeIsDesktop = () => window.innerWidth >= BP.DESKTOP_MIN;
 
   function getPageWidth() {
-    const first = cardPagesContainer.querySelector(".page-promag");
-    if (first) return Math.round(first.getBoundingClientRect().width);
     const wrap = document.querySelector(".content-wrapper-promag");
-    if (wrap) return Math.round(wrap.getBoundingClientRect().width);
-    return Math.round(cardPagesContainer.getBoundingClientRect().width || 1148);
+    const w = wrap?.getBoundingClientRect().width;
+    if (w && Number.isFinite(w)) return Math.round(w);
+    const cont = cardPagesContainer.getBoundingClientRect().width;
+    return Math.round(cont || 1148);
   }
 
+  // === Tinggi konten (dengan fallback aman) ===
   function syncContentWrapperHeight() {
     const wrap = document.querySelector(".content-wrapper-promag");
     const indicators = document.querySelector(".page-indicators-promag");
-    if (!wrap || !indicators) return 0;
+    if (!wrap) return 0;
 
     if (!isDesktopMode) {
       wrap.style.removeProperty("--content-h");
@@ -66,10 +69,15 @@ document.addEventListener("DOMContentLoaded", () => {
     wrap.style.removeProperty("--content-h");
 
     const wrapRect = wrap.getBoundingClientRect();
-    const indRect  = indicators.getBoundingClientRect();
+    const indRect  = indicators ? indicators.getBoundingClientRect() : null;
 
-    let targetH = Math.floor(indRect.top - INDICATOR_GAP_PX - wrapRect.top);
-    if (!Number.isFinite(targetH) || targetH < 0) targetH = 0;
+    let targetH = Number.isFinite(indRect?.top)
+      ? Math.floor(indRect.top - INDICATOR_GAP_PX - wrapRect.top)
+      : NaN;
+
+    // fallback kalau tidak valid/terlalu kecil
+    const fallbackH = Math.floor(window.innerHeight - wrapRect.top - 120);
+    if (!Number.isFinite(targetH) || targetH < 200) targetH = Math.max(200, fallbackH);
 
     wrap.style.setProperty("--content-h", `${targetH}px`);
     return targetH;
@@ -85,30 +93,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function applyDesktopLayoutVars(page) {
     const wrapW = page.getBoundingClientRect().width;
+    const rows  = Math.max(2, lastRows || 2);
 
-    const baseCardW = DESK_CARD_W, baseCardH = DESK_CARD_H, baseGapX = DESK_COL_GAP, cols = DESK_COLS;
-    const baseTrackW = cols * baseCardW + (cols - 1) * baseGapX;
-    let leftover = wrapW - baseTrackW;
-
-    let gapX = baseGapX;
-    if (leftover > 0) {
-      const extraPerGap = leftover / (cols - 1);
-      const MAX_EXTRA = 18;
-      gapX = baseGapX + Math.min(extraPerGap, MAX_EXTRA);
-    }
-
-    let trackW = cols * baseCardW + (cols - 1) * gapX;
-    let scale = 1;
+    const baseW = DESK_CARD_W, baseH = DESK_CARD_H;
+    const baseGapX = DESK_COL_GAP, baseGapY = DESK_ROW_GAP;
+    const cols = DESK_COLS;
     const EPS = 1;
-    if (trackW > wrapW - EPS) {
-      scale = (wrapW - EPS - (cols - 1) * gapX) / (cols * baseCardW);
-      scale = Math.max(0.80, Math.min(1, scale));
-      trackW = cols * (baseCardW * scale) + (cols - 1) * gapX;
-    }
 
+    const scaleWMax = (wrapW - (cols - 1) * baseGapX - EPS) / (cols * baseW);
+    const availH = Math.max(0, lastAvailableH);
+    const scaleHMax = availH > 0
+      ? (availH - (rows - 1) * baseGapY - EPS) / (rows * baseH)
+      : 1;
+
+    let scale = Math.min(scaleWMax, scaleHMax);
+    scale = Math.max(0.80, Math.min(1.30, scale));
+
+    const cardW = baseW * scale;
+    const cardH = baseH * scale;
+    const gapX  = baseGapX * scale;
+    const gapY  = baseGapY * scale;
+
+    page.style.setProperty("--card-w", `${cardW}px`);
+    page.style.setProperty("--card-h", `${cardH}px`);
     page.style.setProperty("--gap-x",  `${gapX}px`);
-    page.style.setProperty("--card-w", `${baseCardW * scale}px`);
-    page.style.setProperty("--card-h", `${baseCardH * scale}px`);
+    page.style.setProperty("--gap-y",  `${gapY}px`);
     page.style.setProperty("--scale",  `${scale}`);
 
     page.classList.add("page-justify-center");
@@ -117,6 +126,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function updateDesktopJustify() {
     if (!isDesktopMode) return;
+    lastAvailableH = syncContentWrapperHeight();
     document.querySelectorAll(".page-promag").forEach(applyDesktopLayoutVars);
   }
 
@@ -129,7 +139,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const lokasiStyle     = p.lokasi_color     ? `background-color:${p.lokasi_color};`       : "";
     const perusahaanStyle = p.perusahaan_color ? `background-color:${p.perusahaan_color};`   : "";
 
-    // Teks dengan fallback "-" (termasuk client_name → lokasi)
     const statusText     = asDash(p.status);
     const tanggalText    = asDash(p.tanggal);
     const titleText      = asDash(p.judul);
@@ -159,6 +168,9 @@ document.addEventListener("DOMContentLoaded", () => {
             '<div class="perusahaan-promag">' +
               `<span style="${perusahaanStyle}">${perusahaanText}</span>` +
             '</div>' +
+
+            // spacer fleksibel: progress selalu di bawah, jarak adaptif
+            '<div class="flex-gap-promag"></div>' +
 
             '<div class="progress-wrapper-promag">' +
               '<div class="progress-title-promag"><span>Progress</span></div>' +
@@ -201,10 +213,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (isDesktopMode) {
       showCarouselUI(true);
 
-      const availableH = syncContentWrapperHeight();
-      const dynRows    = rowsForHeight(availableH);
-      const itemsPerPage = DESK_COLS * dynRows;
+      lastAvailableH = syncContentWrapperHeight();
+      lastRows       = rowsForHeight(lastAvailableH);
 
+      const itemsPerPage = DESK_COLS * lastRows;
       const pages = paginateDesktop(itemsPerPage);
       totalPages = pages.length || 1;
 
@@ -224,14 +236,12 @@ document.addEventListener("DOMContentLoaded", () => {
         pageIndicatorsContainer.appendChild(dot);
       }
 
-      if (!isAutoSliding) {
-        isAutoSliding = true;
-        if (playPauseButton) playPauseButton.textContent = "⏸";
-      }
+      if (!isAutoSliding) { isAutoSliding = true; if (playPauseButton) playPauseButton.textContent = "⏸"; }
       startAutoSlide();
 
       updateDesktopJustify();
       showPage(Math.min(currentPage, totalPages - 1));
+      updateDesktopJustify();
     } else {
       showCarouselUI(false);
       stopAutoSlide();
@@ -256,16 +266,15 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!isDesktopMode) return;
     if (index < 0 || index >= totalPages) return;
 
+    lastAvailableH = syncContentWrapperHeight();
+
     currentPage = Math.max(0, Math.min(index, totalPages - 1));
     const px = Math.round(getPageWidth());
     cardPagesContainer.style.transform = `translateX(${-currentPage * px}px)`;
 
     const dots = document.querySelectorAll(".indicator-dot-promag");
-    for (let i = 0; i < dots.length; i++) {
-      dots[i].classList.toggle("active", i === currentPage);
-    }
+    for (let i = 0; i < dots.length; i++) dots[i].classList.toggle("active", i === currentPage);
 
-    syncContentWrapperHeight();
     updateDesktopJustify();
   }
 
@@ -279,118 +288,40 @@ document.addEventListener("DOMContentLoaded", () => {
     }, SLIDE_INTERVAL);
   }
 
-  function stopAutoSlide() {
-    if (autoSlideInterval) {
-      clearInterval(autoSlideInterval);
-      autoSlideInterval = null;
-    }
-  }
+  function stopAutoSlide() { if (autoSlideInterval) { clearInterval(autoSlideInterval); autoSlideInterval = null; } }
   window.stopAutoSlide = stopAutoSlide;
 
   function toggleAutoSlide() {
-    // Toggle hanya relevan di desktop (carousel)
     if (!isDesktopMode) return;
-
     isAutoSliding = !isAutoSliding;
     if (playPauseButton) playPauseButton.textContent = isAutoSliding ? "⏸" : "▶";
-    if (isAutoSliding) startAutoSlide();
-    else stopAutoSlide();
-
-    syncContentWrapperHeight();
+    if (isAutoSliding) startAutoSlide(); else stopAutoSlide();
     updateDesktopJustify();
   }
 
-  // Tombol play/pause existing
-  if (playPauseButton) {
-    playPauseButton.setAttribute("data-no-toggle", "1");
-    playPauseButton.addEventListener("click", (e) => {
-      e.stopPropagation();
-      toggleAutoSlide();
-    });
-  }
+  // Controls
+  if (playPauseButton) { playPauseButton.setAttribute("data-no-toggle","1"); playPauseButton.addEventListener("click",(e)=>{ e.stopPropagation(); toggleAutoSlide(); }); }
+  if (leftArrow)  leftArrow.setAttribute("data-no-toggle","1");
+  if (rightArrow) rightArrow.setAttribute("data-no-toggle","1");
+  if (pageIndicatorsContainer) pageIndicatorsContainer.setAttribute("data-no-toggle","1");
 
-  // Arrow + indikator ditandai agar tidak memicu toggle global
-  if (leftArrow)  leftArrow.setAttribute("data-no-toggle", "1");
-  if (rightArrow) rightArrow.setAttribute("data-no-toggle", "1");
-  if (pageIndicatorsContainer) pageIndicatorsContainer.setAttribute("data-no-toggle", "1");
+  if (leftArrow) leftArrow.addEventListener("click",(e)=>{ e.stopPropagation(); if(!isDesktopMode) return; stopAutoSlide(); if(currentPage>0) showPage(currentPage-1); else if(typeof window.goToPrevNav==="function") window.goToPrevNav(); else showPage(totalPages-1); if(isAutoSliding) startAutoSlide(); });
+  if (rightArrow) rightArrow.addEventListener("click",(e)=>{ e.stopPropagation(); if(!isDesktopMode) return; stopAutoSlide(); if(currentPage<totalPages-1) showPage(currentPage+1); else if(typeof window.goToNextNav==="function") window.goToNextNav(); else showPage(0); if(isAutoSliding) startAutoSlide(); });
 
-  if (leftArrow) {
-    leftArrow.addEventListener("click", (e) => {
-      e.stopPropagation();
-      if (!isDesktopMode) return;
-      stopAutoSlide();
-      if (currentPage > 0) showPage(currentPage - 1);
-      else if (typeof window.goToPrevNav === "function") window.goToPrevNav();
-      else showPage(totalPages - 1);
-      if (isAutoSliding) startAutoSlide();
-    });
-  }
+  if (pageIndicatorsContainer) pageIndicatorsContainer.addEventListener("click",(e)=>{ if(!isDesktopMode) return; const dot=e.target.closest(".indicator-dot-promag"); if(!dot) return; stopAutoSlide(); showPage(Number(dot.dataset.page)||0); if(isAutoSliding) startAutoSlide(); });
 
-  if (rightArrow) {
-    rightArrow.addEventListener("click", (e) => {
-      e.stopPropagation();
-      if (!isDesktopMode) return;
-      stopAutoSlide();
-      if (currentPage < totalPages - 1) showPage(currentPage + 1);
-      else if (typeof window.goToNextNav === "function") window.goToNextNav();
-      else showPage(0);
-      if (isAutoSliding) startAutoSlide();
-    });
-  }
+  document.addEventListener("click",(e)=>{ if(e.target.closest('.top-bar,[data-no-toggle="1"],.dropdown,.submenu,.menu-item')) return; const sel=window.getSelection&&window.getSelection(); if(sel && !sel.isCollapsed) return; toggleAutoSlide(); }, true);
 
-  if (pageIndicatorsContainer) {
-    pageIndicatorsContainer.addEventListener("click", (e) => {
-      if (!isDesktopMode) return;
-      const dot = e.target.closest(".indicator-dot-promag");
-      if (!dot) return;
-      stopAutoSlide();
-      showPage(Number(dot.dataset.page) || 0);
-      if (isAutoSliding) startAutoSlide();
-    });
-  }
-
-  // =========================
-  // ✨ NEW: Toggle Pause/Play dari mana saja kecuali navbar & kontrol
-  // =========================
-  document.addEventListener("click", (e) => {
-    // Abaikan bila klik terjadi di dalam navbar (.top-bar) atau elemen kontrol yang ditandai
-    if (e.target.closest('.top-bar,[data-no-toggle="1"],.dropdown,.submenu,.menu-item')) return;
-
-    // Abaikan bila ada text selection aktif (biar tidak toggle saat drag-select)
-    const sel = window.getSelection && window.getSelection();
-    if (sel && !sel.isCollapsed) return;
-
-    toggleAutoSlide();
-  }, true); // useCapture agar prioritas lebih tinggi dan mudah disaring
-
-  // Init + reflow hooks
+  // Init
   renderPages();
 
   let resizeTO;
-  window.addEventListener("resize", () => {
-    clearTimeout(resizeTO);
-    resizeTO = setTimeout(() => {
-      const wasDesktop = isDesktopMode;
-      const prevPage = currentPage;
-      renderPages();
-      if (isDesktopMode && wasDesktop) showPage(Math.min(prevPage, totalPages - 1));
-    }, 120);
-  });
+  window.addEventListener("resize",()=>{ clearTimeout(resizeTO); resizeTO=setTimeout(()=>{ const wasDesktop=isDesktopMode; const prev=currentPage; renderPages(); if(isDesktopMode && wasDesktop) showPage(Math.min(prev,totalPages-1)); },120); });
 
-  // fonts.ready (tanpa ?. chaining)
-  if (document.fonts && document.fonts.ready && typeof document.fonts.ready.then === "function") {
-    document.fonts.ready.then(function () {
-      syncContentWrapperHeight();
-      updateDesktopJustify();
-    });
+  if (document.fonts && document.fonts.ready && typeof document.fonts.ready.then==="function") {
+    document.fonts.ready.then(()=>{ lastAvailableH = syncContentWrapperHeight(); updateDesktopJustify(); });
   }
-
-  window.addEventListener("load", () => { syncContentWrapperHeight(); updateDesktopJustify(); });
-  window.addEventListener("orientationchange", () => { syncContentWrapperHeight(); updateDesktopJustify(); });
-  document.addEventListener("visibilitychange", () => {
-    if (!document.hidden) {
-      syncContentWrapperHeight();
-      updateDesktopJustify();
-    }
-  });
+  window.addEventListener("load",()=>{ lastAvailableH = syncContentWrapperHeight(); updateDesktopJustify(); });
+  window.addEventListener("orientationchange",()=>{ lastAvailableH = syncContentWrapperHeight(); updateDesktopJustify(); });
+  document.addEventListener("visibilitychange",()=>{ if(!document.hidden){ lastAvailableH = syncContentWrapperHeight(); updateDesktopJustify(); } });
 });
